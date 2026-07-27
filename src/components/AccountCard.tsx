@@ -129,9 +129,9 @@ function PastBalanceForm({ accountId }: { accountId: string }) {
           type="month"
           value={date.slice(0, 7)}
           onChange={(e) => setDate(`${e.target.value}-01`)}
-          className="flex-1 rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+          className="w-[9.5rem] shrink-0 rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
         />
-        <div className="flex items-center rounded-xl border border-stone-200 bg-white px-3 py-2">
+        <div className="flex flex-1 items-center rounded-xl border border-stone-200 bg-white px-3 py-2">
           <span className="text-stone-400">$</span>
           <input
             inputMode="decimal"
@@ -139,7 +139,7 @@ function PastBalanceForm({ accountId }: { accountId: string }) {
             value={amount}
             onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
             placeholder="0.00"
-            className="ml-1 w-20 bg-transparent text-sm outline-none"
+            className="ml-1 w-full bg-transparent text-sm outline-none"
           />
         </div>
       </div>
