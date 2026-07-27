@@ -14,7 +14,6 @@ import GoalCard from "@/components/GoalCard";
 import MonthGlanceCard from "@/components/MonthGlanceCard";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
 import AddGoalFab from "@/components/AddGoalFab";
-import Greeting from "@/components/Greeting";
 import DateTimeClock from "@/components/DateTimeClock";
 
 export default async function Home() {
@@ -34,10 +33,7 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-6">
-      <div className="flex flex-col gap-1">
-        <Greeting />
-        <DateTimeClock />
-      </div>
+      <DateTimeClock />
 
       <NetWorthCard netWorth={netWorth} series={series} />
       <NetWorthGoalCard goal={netWorthGoal} netWorth={netWorth} />

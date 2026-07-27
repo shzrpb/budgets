@@ -143,7 +143,7 @@ function PastBalanceForm({ accountId }: { accountId: string }) {
           />
         </div>
       </div>
-      <div className="mt-2 flex justify-end gap-3">
+      <div className="mt-2 flex justify-end gap-3 pr-2">
         <button type="button" onClick={() => setOpen(false)} className="text-xs text-stone-400">
           Cancel
         </button>
