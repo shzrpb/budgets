@@ -15,9 +15,9 @@ export default function AddGoalFab({ goal }: { goal: Goal | null }) {
           trigger={
             <span
               aria-label="Add a goal"
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-stone-700 shadow-lg ring-1 ring-stone-200 transition-transform active:scale-95"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-stone-700 shadow-lg ring-1 ring-stone-200 transition-transform active:scale-95"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="9" />
                 <circle cx="12" cy="12" r="5" />
                 <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />

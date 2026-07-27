@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import TopNav from "@/components/TopNav";
-import DateTimeClock from "@/components/DateTimeClock";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,9 +37,6 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-stone-50 text-stone-900">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
-          <div className="flex justify-end px-4 pt-3">
-            <DateTimeClock />
-          </div>
           <TopNav />
           <main className="flex-1 pb-8">{children}</main>
         </div>

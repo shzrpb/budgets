@@ -12,8 +12,6 @@ export default async function TransactionsPage() {
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-6">
-      <h1 className="text-lg font-semibold text-stone-900">Transactions</h1>
-
       <AddFixedSheet categories={categories} accounts={accounts} />
 
       <TransactionList transactions={transactions} categories={categories} accounts={accounts} />

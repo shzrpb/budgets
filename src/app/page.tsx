@@ -15,6 +15,7 @@ import MonthGlanceCard from "@/components/MonthGlanceCard";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
 import AddGoalFab from "@/components/AddGoalFab";
 import Greeting from "@/components/Greeting";
+import DateTimeClock from "@/components/DateTimeClock";
 
 export default async function Home() {
   const [accounts, history, categories, netWorthGoal, customGoal, monthTransactions, settings] =
@@ -33,7 +34,10 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-6">
-      <Greeting />
+      <div className="flex flex-col gap-1">
+        <Greeting />
+        <DateTimeClock />
+      </div>
 
       <NetWorthCard netWorth={netWorth} series={series} />
       <NetWorthGoalCard goal={netWorthGoal} netWorth={netWorth} />
