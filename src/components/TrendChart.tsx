@@ -8,11 +8,13 @@ export default function TrendChart({
   color = "#57534e",
   height = 120,
   formatValue = (v: number) => `$${v.toLocaleString()}`,
+  showAxis = true,
 }: {
   data: TrendPoint[];
   color?: string;
   height?: number;
   formatValue?: (value: number) => string;
+  showAxis?: boolean;
 }) {
   if (data.length === 0) {
     return (
@@ -29,13 +31,15 @@ export default function TrendChart({
     <div style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 6, right: 16, bottom: 0, left: 16 }}>
-          <XAxis
-            dataKey="label"
-            axisLine={false}
-            tickLine={false}
-            tickMargin={14}
-            tick={{ fontSize: 11, fill: "#a8a29e" }}
-          />
+          {showAxis && (
+            <XAxis
+              dataKey="label"
+              axisLine={false}
+              tickLine={false}
+              tickMargin={14}
+              tick={{ fontSize: 11, fill: "#a8a29e" }}
+            />
+          )}
           <YAxis hide domain={["auto", "auto"]} />
           <Tooltip
             content={({ active, payload }) => {

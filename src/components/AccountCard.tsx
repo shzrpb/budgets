@@ -76,7 +76,7 @@ export default function AccountCard({
 
       {expanded && (
         <div className="mt-3">
-          <TrendChart data={series} color={account.color} height={90} />
+          <TrendChart data={series} color={account.color} height={90} showAxis={false} />
           <div className="mt-2 flex justify-between text-xs text-stone-500">
             {lastThreeMonths.map((m) => (
               <div key={m.label} className="text-center">
