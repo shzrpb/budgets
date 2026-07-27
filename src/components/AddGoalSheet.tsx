@@ -43,7 +43,7 @@ export default function AddGoalSheet({
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="text-left">
+      <button type="button" onClick={() => setOpen(true)} className="block w-full text-left">
         {trigger}
       </button>
 

@@ -187,7 +187,15 @@ export async function upsertGoal(input: {
   revalidatePath("/");
 }
 
-export async function addCategory(input: { name: string; color: string }) {
+export async function deleteGoal(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("goals").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+}
+
+export async function addCategory(input: { name: string }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -197,7 +205,6 @@ export async function addCategory(input: { name: string; color: string }) {
   const { error } = await supabase.from("categories").insert({
     user_id: user.id,
     name: input.name,
-    color: input.color,
   });
   if (error) throw new Error(error.message);
 

@@ -3,11 +3,8 @@
 import { useState, useTransition } from "react";
 import { addCategory } from "@/app/actions";
 
-const COLORS = ["#e8a87c", "#d8a7ca", "#b8a4d4", "#e3c16f", "#8fb8c9", "#7fc9b9", "#9bc99b", "#c9a88a"];
-
 export default function AddCategorySheet({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
-  const [color, setColor] = useState(COLORS[0]);
   const [isPending, startTransition] = useTransition();
 
   const canSave = name.trim().length > 0;
@@ -15,7 +12,7 @@ export default function AddCategorySheet({ onClose }: { onClose: () => void }) {
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
-      await addCategory({ name: name.trim(), color });
+      await addCategory({ name: name.trim() });
       onClose();
     });
   }
@@ -38,22 +35,6 @@ export default function AddCategorySheet({ onClose }: { onClose: () => void }) {
           placeholder="e.g. Subscriptions"
           className="mt-4 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
         />
-
-        <p className="mt-4 text-xs font-medium text-stone-400">Color</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setColor(c)}
-              className="h-8 w-8 rounded-full ring-2 ring-offset-2 transition-all"
-              style={{
-                backgroundColor: c,
-                ["--tw-ring-color" as string]: color === c ? c : "transparent",
-              }}
-            />
-          ))}
-        </div>
 
         <button
           type="button"

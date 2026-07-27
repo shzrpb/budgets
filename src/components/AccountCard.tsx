@@ -33,15 +33,9 @@ export default function AccountCard({
   return (
     <div className="rounded-3xl bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span
-            className="h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: account.color }}
-          />
-          <div>
-            <p className="text-sm font-medium text-stone-800">{account.name}</p>
-            <p className="text-xs capitalize text-stone-400">{account.type}</p>
-          </div>
+        <div>
+          <p className="text-sm font-medium text-stone-800">{account.name}</p>
+          <p className="text-xs capitalize text-stone-400">{account.type}</p>
         </div>
 
         {editing ? (

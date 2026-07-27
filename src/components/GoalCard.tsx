@@ -1,7 +1,14 @@
+"use client";
+
+import { useTransition } from "react";
+import { deleteGoal } from "@/app/actions";
 import AddGoalSheet from "@/components/AddGoalSheet";
+import SwipeToDelete from "@/components/SwipeToDelete";
 import type { Goal } from "@/lib/types";
 
 export default function GoalCard({ goal, netWorth }: { goal: Goal | null; netWorth: number }) {
+  const [, startTransition] = useTransition();
+
   if (!goal) {
     return (
       <AddGoalSheet
@@ -25,26 +32,28 @@ export default function GoalCard({ goal, netWorth }: { goal: Goal | null; netWor
     : null;
 
   return (
-    <AddGoalSheet
-      goal={goal}
-      trigger={
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-stone-500">{goal.name}</p>
-            {dateLabel && <p className="text-xs text-stone-400">by {dateLabel}</p>}
+    <SwipeToDelete onDelete={() => startTransition(() => deleteGoal(goal.id))}>
+      <AddGoalSheet
+        goal={goal}
+        trigger={
+          <div className="rounded-3xl bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-stone-500">{goal.name}</p>
+              {dateLabel && <p className="text-xs text-stone-400">by {dateLabel}</p>}
+            </div>
+            <p className="mt-1 text-2xl font-semibold tracking-tight">
+              ${goal.target_amount.toLocaleString()}
+            </p>
+            <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-stone-100">
+              <div
+                className="h-full rounded-full bg-emerald-400 transition-all"
+                style={{ width: `${progress * 100}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-xs text-stone-400">{Math.round(progress * 100)}% there</p>
           </div>
-          <p className="mt-1 text-2xl font-semibold tracking-tight">
-            ${goal.target_amount.toLocaleString()}
-          </p>
-          <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-stone-100">
-            <div
-              className="h-full rounded-full bg-emerald-400 transition-all"
-              style={{ width: `${progress * 100}%` }}
-            />
-          </div>
-          <p className="mt-1.5 text-xs text-stone-400">{Math.round(progress * 100)}% there</p>
-        </div>
-      }
-    />
+        }
+      />
+    </SwipeToDelete>
   );
 }

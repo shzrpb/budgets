@@ -49,7 +49,6 @@ export default function MonthGlanceCard({
             <CategoryPill
               key={category.id}
               name={category.name}
-              color={category.color}
               amount={amount}
             />
           ))}

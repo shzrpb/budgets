@@ -133,7 +133,6 @@ function Sheet({
                 <CategoryPill
                   key={c.id}
                   name={c.name}
-                  color={c.color}
                   selected={categoryId === c.id}
                   onClick={() => setCategoryId(c.id)}
                 />
@@ -173,7 +172,6 @@ function Sheet({
                 <CategoryPill
                   key={a.id}
                   name={a.name}
-                  color={a.color}
                   selected={accountId === a.id}
                   onClick={() => setAccountId(a.id)}
                 />
