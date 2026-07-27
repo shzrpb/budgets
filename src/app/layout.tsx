@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import BottomNav from "@/components/BottomNav";
+import TopNav from "@/components/TopNav";
 import DateTimeClock from "@/components/DateTimeClock";
 
 const geistSans = Geist({
@@ -41,8 +41,8 @@ export default function RootLayout({
           <div className="flex justify-end px-4 pt-3">
             <DateTimeClock />
           </div>
-          <main className="flex-1 pb-4">{children}</main>
-          <BottomNav />
+          <TopNav />
+          <main className="flex-1 pb-8">{children}</main>
         </div>
       </body>
     </html>

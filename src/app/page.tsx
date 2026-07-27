@@ -13,6 +13,7 @@ import NetWorthGoalCard from "@/components/NetWorthGoalCard";
 import GoalCard from "@/components/GoalCard";
 import MonthGlanceCard from "@/components/MonthGlanceCard";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
+import AddGoalFab from "@/components/AddGoalFab";
 import Greeting from "@/components/Greeting";
 
 export default async function Home() {
@@ -43,6 +44,7 @@ export default async function Home() {
         monthlyBudget={settings?.monthly_budget ?? 0}
       />
 
+      <AddGoalFab goal={customGoal} />
       <AddTransactionSheet categories={categories} accounts={accounts} />
     </div>
   );

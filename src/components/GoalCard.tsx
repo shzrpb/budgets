@@ -9,18 +9,7 @@ import type { Goal } from "@/lib/types";
 export default function GoalCard({ goal, netWorth }: { goal: Goal | null; netWorth: number }) {
   const [, startTransition] = useTransition();
 
-  if (!goal) {
-    return (
-      <AddGoalSheet
-        goal={null}
-        trigger={
-          <span className="text-xs font-medium text-stone-400 underline decoration-stone-300 underline-offset-2">
-            + Add a goal
-          </span>
-        }
-      />
-    );
-  }
+  if (!goal) return null;
 
   const progress = goal.target_amount > 0 ? Math.min(netWorth / goal.target_amount, 1) : 0;
   const dateLabel = goal.target_date

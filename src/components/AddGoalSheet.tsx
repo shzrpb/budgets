@@ -11,6 +11,7 @@ export default function AddGoalSheet({
   title,
   namePlaceholder = "e.g. Emergency fund",
   fixedName,
+  triggerClassName = "block w-full text-left",
 }: {
   goal: Goal | null;
   trigger: React.ReactNode;
@@ -18,6 +19,7 @@ export default function AddGoalSheet({
   title?: string;
   namePlaceholder?: string;
   fixedName?: string;
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(goal?.name ?? fixedName ?? "");
@@ -43,7 +45,7 @@ export default function AddGoalSheet({
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="block w-full text-left">
+      <button type="button" onClick={() => setOpen(true)} className={triggerClassName}>
         {trigger}
       </button>
 

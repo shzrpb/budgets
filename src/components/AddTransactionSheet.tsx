@@ -17,7 +17,7 @@ export default function AddTransactionSheet({
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center">
+      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
         <div className="flex w-full max-w-md justify-end px-4">
           <button
             type="button"
