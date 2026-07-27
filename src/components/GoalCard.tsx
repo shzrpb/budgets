@@ -7,10 +7,9 @@ export default function GoalCard({ goal, netWorth }: { goal: Goal | null; netWor
       <AddGoalSheet
         goal={null}
         trigger={
-          <div className="rounded-3xl bg-white p-5 text-sm text-stone-500 shadow-sm">
-            No goal set yet.{" "}
-            <span className="font-medium text-stone-800">Tap to add one →</span>
-          </div>
+          <span className="text-xs font-medium text-stone-400 underline decoration-stone-300 underline-offset-2">
+            + Add a goal
+          </span>
         }
       />
     );
