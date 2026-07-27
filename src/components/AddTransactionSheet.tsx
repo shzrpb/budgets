@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { addTransaction } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
+import AddCategorySheet from "@/components/AddCategorySheet";
 import type { Account, Category, PaymentMethod, TransactionType } from "@/lib/types";
 
 export default function AddTransactionSheet({
@@ -59,6 +60,7 @@ function Sheet({
   const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState(false);
+  const [addingCategory, setAddingCategory] = useState(false);
 
   const canSave = Number(amount) > 0;
 
@@ -130,13 +132,19 @@ function Sheet({
               {categories.map((c) => (
                 <CategoryPill
                   key={c.id}
-                  emoji={c.emoji}
                   name={c.name}
                   color={c.color}
                   selected={categoryId === c.id}
                   onClick={() => setCategoryId(c.id)}
                 />
               ))}
+              <button
+                type="button"
+                onClick={() => setAddingCategory(true)}
+                className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-3 py-1.5 text-sm text-stone-500"
+              >
+                + New
+              </button>
             </div>
 
             <p className="mt-5 text-xs font-medium text-stone-400">Paid with</p>
@@ -164,7 +172,6 @@ function Sheet({
               {accounts.map((a) => (
                 <CategoryPill
                   key={a.id}
-                  emoji={null}
                   name={a.name}
                   color={a.color}
                   selected={accountId === a.id}
@@ -191,6 +198,8 @@ function Sheet({
           {toast ? "Saved" : isPending ? "Saving…" : `Save ${type}`}
         </button>
       </div>
+
+      {addingCategory && <AddCategorySheet onClose={() => setAddingCategory(false)} />}
     </div>
   );
 }

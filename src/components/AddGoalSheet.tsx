@@ -2,31 +2,40 @@
 
 import { useState, useTransition } from "react";
 import { upsertGoal } from "@/app/actions";
-import type { Goal } from "@/lib/types";
+import type { Goal, GoalKind } from "@/lib/types";
 
 export default function AddGoalSheet({
   goal,
   trigger,
+  kind = "custom",
+  title,
+  namePlaceholder = "e.g. Emergency fund",
+  fixedName,
 }: {
   goal: Goal | null;
   trigger: React.ReactNode;
+  kind?: GoalKind;
+  title?: string;
+  namePlaceholder?: string;
+  fixedName?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState(goal?.name ?? "");
+  const [name, setName] = useState(goal?.name ?? fixedName ?? "");
   const [targetAmount, setTargetAmount] = useState(goal?.target_amount.toString() ?? "");
   const [targetDate, setTargetDate] = useState(goal?.target_date ?? "");
   const [isPending, startTransition] = useTransition();
 
-  const canSave = name.trim().length > 0 && Number(targetAmount) > 0;
+  const canSave = (fixedName ?? name).trim().length > 0 && Number(targetAmount) > 0;
 
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
       await upsertGoal({
         id: goal?.id,
-        name: name.trim(),
+        name: (fixedName ?? name).trim(),
         targetAmount: Number(targetAmount),
         targetDate: targetDate || null,
+        kind,
       });
       setOpen(false);
     });
@@ -44,25 +53,28 @@ export default function AddGoalSheet({
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-stone-800">
-                {goal ? "Edit goal" : "Add a goal"}
+                {title ?? (goal ? "Edit goal" : "Add a goal")}
               </p>
               <button type="button" onClick={() => setOpen(false)} className="text-sm text-stone-400">
                 Cancel
               </button>
             </div>
 
-            <input
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Emergency fund"
-              className="mt-4 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
-            />
+            {!fixedName && (
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={namePlaceholder}
+                className="mt-4 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
+              />
+            )}
 
             <p className="mt-4 text-xs font-medium text-stone-400">Target amount</p>
             <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
               <span className="text-stone-400">$</span>
               <input
+                autoFocus={!!fixedName}
                 inputMode="decimal"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9.]/g, ""))}

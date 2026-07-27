@@ -48,13 +48,24 @@ export async function getSettings(): Promise<Settings | null> {
   return (data as Settings) ?? null;
 }
 
-export async function getGoal(): Promise<Goal | null> {
+export async function getCustomGoal(): Promise<Goal | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("goals")
     .select("*")
+    .eq("kind", "custom")
     .order("created_at", { ascending: false })
     .limit(1)
+    .maybeSingle();
+  return (data as Goal) ?? null;
+}
+
+export async function getNetWorthGoal(): Promise<Goal | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("goals")
+    .select("*")
+    .eq("kind", "net_worth")
     .maybeSingle();
   return (data as Goal) ?? null;
 }

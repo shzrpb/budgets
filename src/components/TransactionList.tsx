@@ -69,12 +69,17 @@ function Row({
     <div className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
       <div className="flex items-center gap-3">
         <span
-          className="flex h-9 w-9 items-center justify-center rounded-full text-base"
+          className="flex h-9 w-9 items-center justify-center rounded-full"
           style={{
-            backgroundColor: `${category?.color ?? "#a8a29e"}33`,
+            backgroundColor: `${transaction.type === "income" ? "#7fc9b9" : (category?.color ?? "#a8a29e")}33`,
           }}
         >
-          {transaction.type === "income" ? "💰" : category?.emoji ?? "•"}
+          <span
+            className="h-2.5 w-2.5 rounded-full"
+            style={{
+              backgroundColor: transaction.type === "income" ? "#7fc9b9" : (category?.color ?? "#a8a29e"),
+            }}
+          />
         </span>
         <div>
           <p className="text-sm font-medium text-stone-800">

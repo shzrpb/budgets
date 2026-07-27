@@ -19,7 +19,6 @@ create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   name text not null,
-  emoji text,
   color text not null default '#a8a29e',
   created_at timestamptz not null default now(),
   unique (user_id, name)
@@ -85,8 +84,12 @@ create table if not exists public.goals (
   name text not null,
   target_amount numeric(14, 2) not null,
   target_date date,
+  kind text not null default 'custom' check (kind in ('net_worth', 'custom')),
   created_at timestamptz not null default now()
 );
+
+create unique index if not exists goals_one_net_worth_per_user
+  on public.goals (user_id) where (kind = 'net_worth');
 
 -- ─────────────────────────────────────────────────────────────
 -- Row Level Security: every table scoped to auth.uid()
@@ -146,15 +149,16 @@ begin
   insert into public.settings (user_id) values (new.id)
   on conflict (user_id) do nothing;
 
-  insert into public.categories (user_id, name, emoji, color)
+  insert into public.categories (user_id, name, color)
   values
-    (new.id, 'Food', '🍜', '#f97316'),
-    (new.id, 'Shopping', '🛍️', '#ec4899'),
-    (new.id, 'Gifts', '🎁', '#a855f7'),
-    (new.id, 'Taxi', '🚕', '#eab308'),
-    (new.id, 'PT', '🚇', '#0ea5e9'),
-    (new.id, 'Drinks', '🍹', '#14b8a6'),
-    (new.id, 'Groceries', '🛒', '#22c55e')
+    (new.id, 'Food', '#e8a87c'),
+    (new.id, 'Shopping', '#d8a7ca'),
+    (new.id, 'Gifts', '#b8a4d4'),
+    (new.id, 'Taxi', '#e3c16f'),
+    (new.id, 'PT', '#8fb8c9'),
+    (new.id, 'Drinks', '#7fc9b9'),
+    (new.id, 'Groceries', '#9bc99b'),
+    (new.id, 'Bills', '#c9a88a')
   on conflict (user_id, name) do nothing;
 
   return new;

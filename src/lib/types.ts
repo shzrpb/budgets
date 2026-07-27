@@ -9,6 +9,7 @@ export type AccountType =
 export type TransactionType = "spend" | "income";
 export type PaymentMethod = "cash" | "credit";
 export type Recurrence = "none" | "monthly" | "yearly";
+export type GoalKind = "net_worth" | "custom";
 
 export interface Settings {
   user_id: string;
@@ -20,7 +21,6 @@ export interface Category {
   id: string;
   user_id: string;
   name: string;
-  emoji: string | null;
   color: string;
   created_at: string;
 }
@@ -65,5 +65,6 @@ export interface Goal {
   name: string;
   target_amount: number;
   target_date: string | null;
+  kind: GoalKind;
   created_at: string;
 }

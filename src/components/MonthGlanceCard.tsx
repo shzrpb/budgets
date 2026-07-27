@@ -48,7 +48,6 @@ export default function MonthGlanceCard({
           {categoryTotals.map(({ category, amount }) => (
             <CategoryPill
               key={category.id}
-              emoji={category.emoji}
               name={category.name}
               color={category.color}
               amount={amount}

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { PaymentMethod, Recurrence, TransactionType } from "@/lib/types";
+import type { GoalKind, PaymentMethod, Recurrence, TransactionType } from "@/lib/types";
 
 export async function addTransaction(input: {
   amount: number;
@@ -105,6 +105,47 @@ export async function updateAccountBalance(accountId: string, balance: number) {
   revalidatePath("/accounts");
 }
 
+export async function addBalanceHistoryEntry(
+  accountId: string,
+  balance: number,
+  recordedAt: string,
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const recordedAtIso = new Date(recordedAt).toISOString();
+
+  const { error: insertError } = await supabase.from("account_balance_history").insert({
+    account_id: accountId,
+    user_id: user.id,
+    balance,
+    recorded_at: recordedAtIso,
+  });
+  if (insertError) throw new Error(insertError.message);
+
+  const { data: latest } = await supabase
+    .from("account_balance_history")
+    .select("recorded_at")
+    .eq("account_id", accountId)
+    .order("recorded_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (latest?.recorded_at === recordedAtIso) {
+    const { error: updateError } = await supabase
+      .from("accounts")
+      .update({ balance, updated_at: recordedAtIso })
+      .eq("id", accountId);
+    if (updateError) throw new Error(updateError.message);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+}
+
 export async function updateMonthlyBudget(monthlyBudget: number) {
   const supabase = await createClient();
   const {
@@ -125,6 +166,7 @@ export async function upsertGoal(input: {
   name: string;
   targetAmount: number;
   targetDate: string | null;
+  kind?: GoalKind;
 }) {
   const supabase = await createClient();
   const {
@@ -138,13 +180,14 @@ export async function upsertGoal(input: {
     name: input.name,
     target_amount: input.targetAmount,
     target_date: input.targetDate,
+    kind: input.kind ?? "custom",
   });
   if (error) throw new Error(error.message);
 
   revalidatePath("/");
 }
 
-export async function addCategory(input: { name: string; emoji: string; color: string }) {
+export async function addCategory(input: { name: string; color: string }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -154,7 +197,6 @@ export async function addCategory(input: { name: string; emoji: string; color: s
   const { error } = await supabase.from("categories").insert({
     user_id: user.id,
     name: input.name,
-    emoji: input.emoji,
     color: input.color,
   });
   if (error) throw new Error(error.message);

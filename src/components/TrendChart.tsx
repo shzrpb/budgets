@@ -37,11 +37,13 @@ export default function TrendChart({
           />
           <YAxis hide domain={["auto", "auto"]} />
           <Tooltip
-            formatter={(value) => formatValue(Number(value))}
-            contentStyle={{
-              borderRadius: 12,
-              border: "1px solid #e7e5e4",
-              fontSize: 12,
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              return (
+                <div className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs shadow-sm">
+                  {formatValue(Number(payload[0].value))}
+                </div>
+              );
             }}
           />
           <Line
