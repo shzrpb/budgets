@@ -117,6 +117,22 @@ create policy "goals_owner" on public.goals
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────────────────────────
+-- Grants: RLS policies above control *which rows* a request can
+-- touch, but Postgres also requires a baseline table-level grant
+-- before the API roles can touch the table at all.
+-- ─────────────────────────────────────────────────────────────
+grant usage on schema public to anon, authenticated;
+
+grant select, insert, update, delete on
+  public.settings,
+  public.categories,
+  public.accounts,
+  public.account_balance_history,
+  public.transactions,
+  public.goals
+to authenticated;
+
+-- ─────────────────────────────────────────────────────────────
 -- Seed default categories + settings row for a new user.
 -- Runs automatically whenever a new auth user is created.
 -- ─────────────────────────────────────────────────────────────
