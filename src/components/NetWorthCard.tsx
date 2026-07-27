@@ -1,0 +1,22 @@
+import TrendChart from "@/components/TrendChart";
+import type { TrendPoint } from "@/lib/networth";
+
+export default function NetWorthCard({
+  netWorth,
+  series,
+}: {
+  netWorth: number;
+  series: TrendPoint[];
+}) {
+  return (
+    <div className="rounded-3xl bg-white p-5 shadow-sm">
+      <p className="text-sm text-stone-500">Net worth</p>
+      <p className="mt-1 text-3xl font-semibold tracking-tight">
+        ${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+      </p>
+      <div className="mt-3">
+        <TrendChart data={series} color="#57534e" />
+      </div>
+    </div>
+  );
+}
