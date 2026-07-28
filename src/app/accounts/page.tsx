@@ -1,4 +1,4 @@
-import { getAccountHistory, getAccounts, getCards, getMonthTransactions } from "@/lib/data";
+import { getAccountHistories, getAccounts, getCards, getMonthTransactions } from "@/lib/data";
 import { accountTrendSeries, lastNMonthBalances } from "@/lib/networth";
 import AccountsView from "@/components/AccountsView";
 
@@ -8,7 +8,8 @@ export default async function AccountsPage() {
     getCards(),
     getMonthTransactions(),
   ]);
-  const histories = await Promise.all(accounts.map((a) => getAccountHistory(a.id)));
+  const historyByAccount = await getAccountHistories(accounts.map((a) => a.id));
+  const histories = accounts.map((a) => historyByAccount.get(a.id) ?? []);
 
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
 

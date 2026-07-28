@@ -43,6 +43,27 @@ export async function getAccountHistory(accountId: string): Promise<AccountBalan
   return (data as AccountBalanceHistoryRow[]) ?? [];
 }
 
+export async function getAccountHistories(
+  accountIds: string[],
+): Promise<Map<string, AccountBalanceHistoryRow[]>> {
+  const byAccount = new Map<string, AccountBalanceHistoryRow[]>();
+  if (accountIds.length === 0) return byAccount;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("account_balance_history")
+    .select("*")
+    .in("account_id", accountIds)
+    .order("recorded_at");
+
+  for (const row of (data as AccountBalanceHistoryRow[]) ?? []) {
+    const list = byAccount.get(row.account_id);
+    if (list) list.push(row);
+    else byAccount.set(row.account_id, [row]);
+  }
+  return byAccount;
+}
+
 export async function getCategories(): Promise<Category[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("categories").select("*").order("created_at");
