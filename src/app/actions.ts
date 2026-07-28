@@ -152,6 +152,7 @@ export async function addCard(input: {
   name: string;
   color: string;
   maxSpend: number | null;
+  note?: string | null;
 }) {
   const supabase = await createClient();
   const {
@@ -164,6 +165,7 @@ export async function addCard(input: {
     name: input.name,
     color: input.color,
     max_spend: input.maxSpend,
+    note: input.note ?? null,
   });
   if (error) throw new Error(error.message);
 

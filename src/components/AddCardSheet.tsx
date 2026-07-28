@@ -9,6 +9,7 @@ export default function AddCardSheet() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [maxSpend, setMaxSpend] = useState("");
+  const [note, setNote] = useState("");
   const [color, setColor] = useState(COLORS[0]);
   const [isPending, startTransition] = useTransition();
 
@@ -21,10 +22,12 @@ export default function AddCardSheet() {
         name: name.trim(),
         color,
         maxSpend: maxSpend === "" ? null : Number(maxSpend),
+        note: note.trim() || null,
       });
       setOpen(false);
       setName("");
       setMaxSpend("");
+      setNote("");
     });
   }
 
@@ -87,6 +90,17 @@ export default function AddCardSheet() {
                 className="ml-1 w-full bg-transparent text-sm outline-none"
               />
             </div>
+
+            <p className="mt-4 text-xs font-medium text-stone-400">
+              Note <span className="text-stone-300">(optional)</span>
+            </p>
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="e.g. 5x miles on dining"
+              maxLength={80}
+              className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
+            />
 
             <button
               type="button"
