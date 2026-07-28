@@ -3,37 +3,39 @@
 import { useState, useTransition } from "react";
 import { addTransaction, updateTransaction } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
-import AddCategorySheet from "@/components/AddCategorySheet";
+import AddCategorySheet, { EditCategorySheet } from "@/components/AddCategorySheet";
 import type { Account, Card, Category, PaymentMethod, Transaction, TransactionType } from "@/lib/types";
 
 export default function AddTransactionSheet({
   categories,
   accounts,
   cards = [],
-  center = false,
 }: {
   categories: Category[];
   accounts: Account[];
   cards?: Card[];
-  center?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
-        <div className={`flex w-full max-w-md px-4 ${center ? "justify-center" : "justify-end"}`}>
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            aria-label="Add spend or income"
-            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg transition-transform active:scale-95"
-          >
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
-        </div>
+      {/* Sits centered on the bottom nav bar, half-overlapping its top edge
+          like a standard tab-bar FAB. The bottom offset mirrors TopNav's own
+          padding + pill height so the overlap holds across safe areas. */}
+      <div
+        className="pointer-events-none fixed inset-x-0 z-50 flex justify-center"
+        style={{ bottom: "calc(max(1rem, env(safe-area-inset-bottom)) + 28px)" }}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Add spend or income"
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg transition-transform active:scale-95"
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </button>
       </div>
 
       {open && (
@@ -103,6 +105,7 @@ function Sheet({
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const canSave = Number(amount) > 0;
 
@@ -197,6 +200,7 @@ function Sheet({
                   name={c.name}
                   selected={categoryId === c.id}
                   onClick={() => setCategoryId(c.id)}
+                  onLongPress={() => setEditingCategory(c)}
                 />
               ))}
               <button
@@ -288,6 +292,9 @@ function Sheet({
       </div>
 
       {addingCategory && <AddCategorySheet onClose={() => setAddingCategory(false)} />}
+      {editingCategory && (
+        <EditCategorySheet category={editingCategory} onClose={() => setEditingCategory(null)} />
+      )}
     </div>
   );
 }

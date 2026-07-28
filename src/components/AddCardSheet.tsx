@@ -28,6 +28,7 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
   const [maxSpend, setMaxSpend] = useState(card?.max_spend?.toString() ?? "");
   const [note, setNote] = useState(card?.note ?? "");
   const [color, setColor] = useState(card?.color ?? COLORS[0]);
+  const [billDueDay, setBillDueDay] = useState(card?.bill_due_day?.toString() ?? "");
   const [isPending, startTransition] = useTransition();
 
   const canSave = name.trim().length > 0;
@@ -40,6 +41,7 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
         color,
         maxSpend: maxSpend === "" ? null : Number(maxSpend),
         note: note.trim() || null,
+        billDueDay: billDueDay === "" ? null : Math.min(31, Math.max(1, Number(billDueDay))),
       };
       if (isEdit) await updateCard(card!.id, input);
       else await addCard(input);
@@ -97,6 +99,20 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
             placeholder="No limit"
             className="ml-1 w-full bg-transparent text-sm outline-none"
           />
+        </div>
+
+        <p className="mt-4 text-xs font-medium text-stone-400">
+          Bill due day <span className="text-stone-300">(optional)</span>
+        </p>
+        <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+          <input
+            inputMode="numeric"
+            value={billDueDay}
+            onChange={(e) => setBillDueDay(e.target.value.replace(/[^0-9]/g, "").slice(0, 2))}
+            placeholder="No reminder"
+            className="w-full bg-transparent text-sm outline-none"
+          />
+          <span className="text-stone-400">day of month</span>
         </div>
 
         <p className="mt-4 text-xs font-medium text-stone-400">

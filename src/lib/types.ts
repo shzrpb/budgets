@@ -58,6 +58,8 @@ export interface Card {
   color: string;
   max_spend: number | null;
   note: string | null;
+  /** Day of month (1-31) the bill is due; recalculated every month. */
+  bill_due_day: number | null;
   created_at: string;
 }
 

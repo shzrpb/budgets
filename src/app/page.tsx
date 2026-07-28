@@ -3,6 +3,7 @@ import { buildNetWorthSeries } from "@/lib/networth";
 import NetWorthCard from "@/components/NetWorthCard";
 import NetWorthGoalCard from "@/components/NetWorthGoalCard";
 import MonthGlanceCard from "@/components/MonthGlanceCard";
+import CardDueReminder from "@/components/CardDueReminder";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
 import DateTimeClock from "@/components/DateTimeClock";
 
@@ -36,6 +37,7 @@ export default async function Home() {
 
       <NetWorthCard netWorth={netWorth} series={series} />
       <NetWorthGoalCard goal={netWorthGoal} netWorth={netWorth} />
+      <CardDueReminder cards={cards} />
       <MonthGlanceCard
         transactions={monthTransactions}
         categories={categories}
@@ -43,7 +45,7 @@ export default async function Home() {
         overLimitCards={overLimitCards}
       />
 
-      <AddTransactionSheet categories={categories} accounts={accounts} cards={cards} center />
+      <AddTransactionSheet categories={categories} accounts={accounts} cards={cards} />
     </div>
   );
 }

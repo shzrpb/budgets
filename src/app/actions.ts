@@ -269,6 +269,7 @@ export async function addCard(input: {
   color: string;
   maxSpend: number | null;
   note?: string | null;
+  billDueDay?: number | null;
 }) {
   const supabase = await createClient();
   const {
@@ -282,6 +283,7 @@ export async function addCard(input: {
     color: input.color,
     max_spend: input.maxSpend,
     note: input.note ?? null,
+    bill_due_day: input.billDueDay ?? null,
   });
   if (error) throw new Error(error.message);
 
@@ -290,7 +292,13 @@ export async function addCard(input: {
 
 export async function updateCard(
   cardId: string,
-  input: { name: string; color: string; maxSpend: number | null; note?: string | null },
+  input: {
+    name: string;
+    color: string;
+    maxSpend: number | null;
+    note?: string | null;
+    billDueDay?: number | null;
+  },
 ) {
   const supabase = await createClient();
   const { error } = await supabase
@@ -300,6 +308,7 @@ export async function updateCard(
       color: input.color,
       max_spend: input.maxSpend,
       note: input.note ?? null,
+      bill_due_day: input.billDueDay ?? null,
     })
     .eq("id", cardId);
   if (error) throw new Error(error.message);
@@ -382,6 +391,31 @@ export async function addCategory(input: { name: string }) {
     user_id: user.id,
     name: input.name,
   });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/transactions");
+}
+
+export async function updateCategory(id: string, input: { name: string }) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("categories")
+    .update({ name: input.name })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/transactions");
+}
+
+/**
+ * Deleting a category doesn't touch its past transactions — the FK is
+ * ON DELETE SET NULL, so they just become uncategorized.
+ */
+export async function deleteCategory(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) throw new Error(error.message);
 
   revalidatePath("/");

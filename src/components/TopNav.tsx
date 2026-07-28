@@ -56,8 +56,8 @@ export default function TopNav() {
   if (pathname === "/login") return null;
 
   return (
-    <nav className="px-4 pt-2">
-      <div className="flex gap-1.5 rounded-full bg-stone-100 p-1">
+    <nav className="px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
+      <div className="flex h-14 gap-1.5 rounded-full bg-stone-100 p-1">
         {TABS.map(({ href, label, Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
@@ -65,7 +65,7 @@ export default function TopNav() {
               key={href}
               href={href}
               aria-label={label}
-              className={`flex flex-1 items-center justify-center rounded-full py-2.5 transition-colors ${
+              className={`flex flex-1 items-center justify-center rounded-full transition-colors ${
                 active ? "bg-white text-stone-900 shadow-sm" : "text-stone-400"
               }`}
             >

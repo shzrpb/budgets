@@ -7,6 +7,11 @@ import SwipeActions from "@/components/SwipeActions";
 import { editDeleteActions } from "@/components/rowActions";
 import type { Card } from "@/lib/types";
 
+function ordinal(day: number): string {
+  const suffix = ["th", "st", "nd", "rd"][day % 10 <= 3 && ![11, 12, 13].includes(day % 100) ? day % 10 : 0];
+  return `${day}${suffix}`;
+}
+
 export default function CardItem({
   card,
   monthSpend,
@@ -49,6 +54,11 @@ export default function CardItem({
           </div>
 
           {card.note && <p className="mt-2 text-xs text-stone-400">{card.note}</p>}
+          {card.bill_due_day != null && (
+            <p className="mt-1 text-xs text-stone-400">
+              Bill due on the {ordinal(card.bill_due_day)}
+            </p>
+          )}
 
           <div className="mt-3 flex items-center justify-between text-xs text-stone-500">
             <span>This month: ${monthSpend.toLocaleString()}</span>

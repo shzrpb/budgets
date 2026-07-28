@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { addTransaction, updateTransaction } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
-import AddCategorySheet from "@/components/AddCategorySheet";
+import AddCategorySheet, { EditCategorySheet } from "@/components/AddCategorySheet";
 import type { Account, Card, Category, PaymentMethod, Recurrence, Transaction, TransactionType } from "@/lib/types";
 
 export default function FixedSheetForm({
@@ -39,6 +39,7 @@ export default function FixedSheetForm({
   const [note, setNote] = useState(transaction?.note ?? "");
   const [isPending, startTransition] = useTransition();
   const [addingCategory, setAddingCategory] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const canSave = Number(amount) > 0;
   const showAccounts = type === "income" || paymentMethod === "cash";
@@ -134,6 +135,7 @@ export default function FixedSheetForm({
                   name={c.name}
                   selected={categoryId === c.id}
                   onClick={() => setCategoryId(c.id)}
+                  onLongPress={() => setEditingCategory(c)}
                 />
               ))}
               <button
@@ -237,6 +239,9 @@ export default function FixedSheetForm({
       </div>
 
       {addingCategory && <AddCategorySheet onClose={() => setAddingCategory(false)} />}
+      {editingCategory && (
+        <EditCategorySheet category={editingCategory} onClose={() => setEditingCategory(null)} />
+      )}
     </div>
   );
 }
