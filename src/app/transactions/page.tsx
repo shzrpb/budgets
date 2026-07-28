@@ -1,6 +1,5 @@
 import { getAccounts, getCards, getCategories, getRecentTransactions, getSettings } from "@/lib/data";
 import TransactionList from "@/components/TransactionList";
-import AddTransactionSheet from "@/components/AddTransactionSheet";
 import MonthlyBudgetCard from "@/components/MonthlyBudgetCard";
 
 export default async function TransactionsPage() {
@@ -19,8 +18,6 @@ export default async function TransactionsPage() {
       <TransactionList transactions={transactions} categories={categories} accounts={accounts} cards={cards} />
 
       <div className="h-16" />
-
-      <AddTransactionSheet categories={categories} accounts={accounts} cards={cards} />
     </div>
   );
 }

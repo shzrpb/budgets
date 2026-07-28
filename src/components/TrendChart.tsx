@@ -28,7 +28,7 @@ export default function TrendChart({
   }
 
   return (
-    <div style={{ height }}>
+    <div style={{ height }} className="[&_.recharts-surface]:outline-none [&_.recharts-wrapper]:outline-none">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 6, right: 16, bottom: 0, left: 16 }}>
           {showAxis && (

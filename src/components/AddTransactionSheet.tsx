@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { addTransaction, updateTransaction } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
 import AddCategorySheet, { EditCategorySheet } from "@/components/AddCategorySheet";
+import { useAnySheetOpen, useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Account, Card, Category, PaymentMethod, Transaction, TransactionType } from "@/lib/types";
 
 export default function AddTransactionSheet({
@@ -16,27 +17,32 @@ export default function AddTransactionSheet({
   cards?: Card[];
 }) {
   const [open, setOpen] = useState(false);
+  useRegisterSheetOpen(open);
+  const anySheetOpen = useAnySheetOpen();
 
   return (
     <>
       {/* Sits centered on the bottom nav bar, half-overlapping its top edge
           like a standard tab-bar FAB. The bottom offset mirrors TopNav's own
-          padding + pill height so the overlap holds across safe areas. */}
-      <div
-        className="pointer-events-none fixed inset-x-0 z-50 flex justify-center"
-        style={{ bottom: "calc(max(1rem, env(safe-area-inset-bottom)) + 28px)" }}
-      >
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Add spend or income"
-          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg transition-transform active:scale-95"
+          padding + pill height so the overlap holds across safe areas. Hidden
+          whenever any sheet (this one or another) is open. */}
+      {!anySheetOpen && (
+        <div
+          className="pointer-events-none fixed inset-x-0 z-50 flex justify-center"
+          style={{ bottom: "calc(max(1rem, env(safe-area-inset-bottom)) + 28px)" }}
         >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Add spend or income"
+            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-stone-900 text-white shadow-lg transition-transform active:scale-95"
+          >
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {open && (
         <Sheet

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { upsertGoal } from "@/app/actions";
+import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Goal } from "@/lib/types";
 
 export default function AddGoalSheet({
@@ -16,6 +17,7 @@ export default function AddGoalSheet({
   triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  useRegisterSheetOpen(open);
   const [targetAmount, setTargetAmount] = useState(goal?.target_amount.toString() ?? "");
   const [targetDate, setTargetDate] = useState(goal?.target_date ?? "");
   const [isPending, startTransition] = useTransition();
