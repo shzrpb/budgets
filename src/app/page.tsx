@@ -1,13 +1,4 @@
-import {
-  getAccounts,
-  getBalanceHistory,
-  getCards,
-  getCategories,
-  getCustomGoal,
-  getNetWorthGoal,
-  getMonthTransactions,
-  getSettings,
-} from "@/lib/data";
+import { getHomeData } from "@/lib/data";
 import { buildNetWorthSeries } from "@/lib/networth";
 import NetWorthCard from "@/components/NetWorthCard";
 import NetWorthGoalCard from "@/components/NetWorthGoalCard";
@@ -18,17 +9,8 @@ import AddGoalFab from "@/components/AddGoalFab";
 import DateTimeClock from "@/components/DateTimeClock";
 
 export default async function Home() {
-  const [accounts, history, categories, cards, netWorthGoal, customGoal, monthTransactions, settings] =
-    await Promise.all([
-      getAccounts(),
-      getBalanceHistory(),
-      getCategories(),
-      getCards(),
-      getNetWorthGoal(),
-      getCustomGoal(),
-      getMonthTransactions(),
-      getSettings(),
-    ]);
+  const { accounts, history, categories, cards, netWorthGoal, customGoal, monthTransactions, settings } =
+    await getHomeData();
 
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
   const series = buildNetWorthSeries(history);

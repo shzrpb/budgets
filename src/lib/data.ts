@@ -98,6 +98,34 @@ export async function getNetWorthGoal(): Promise<Goal | null> {
   return (data as Goal) ?? null;
 }
 
+export interface HomeData {
+  accounts: Account[];
+  history: AccountBalanceHistoryRow[];
+  categories: Category[];
+  cards: Card[];
+  netWorthGoal: Goal | null;
+  customGoal: Goal | null;
+  monthTransactions: Transaction[];
+  settings: Settings | null;
+}
+
+export async function getHomeData(months = 6): Promise<HomeData> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_home_data", { months });
+  if (error) throw new Error(error.message);
+
+  return {
+    accounts: (data?.accounts as Account[]) ?? [],
+    history: (data?.balance_history as AccountBalanceHistoryRow[]) ?? [],
+    categories: (data?.categories as Category[]) ?? [],
+    cards: (data?.cards as Card[]) ?? [],
+    netWorthGoal: (data?.net_worth_goal as Goal | null) ?? null,
+    customGoal: (data?.custom_goal as Goal | null) ?? null,
+    monthTransactions: (data?.month_transactions as Transaction[]) ?? [],
+    settings: (data?.settings as Settings | null) ?? null,
+  };
+}
+
 export async function getMonthTransactions(): Promise<Transaction[]> {
   const supabase = await createClient();
   const now = new Date();
