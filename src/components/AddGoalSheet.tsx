@@ -2,42 +2,33 @@
 
 import { useState, useTransition } from "react";
 import { upsertGoal } from "@/app/actions";
-import type { Goal, GoalKind } from "@/lib/types";
+import type { Goal } from "@/lib/types";
 
 export default function AddGoalSheet({
   goal,
   trigger,
-  kind = "custom",
   title,
-  namePlaceholder = "e.g. Emergency fund",
-  fixedName,
   triggerClassName = "block w-full text-left",
 }: {
   goal: Goal | null;
   trigger: React.ReactNode;
-  kind?: GoalKind;
   title?: string;
-  namePlaceholder?: string;
-  fixedName?: string;
   triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState(goal?.name ?? fixedName ?? "");
   const [targetAmount, setTargetAmount] = useState(goal?.target_amount.toString() ?? "");
   const [targetDate, setTargetDate] = useState(goal?.target_date ?? "");
   const [isPending, startTransition] = useTransition();
 
-  const canSave = (fixedName ?? name).trim().length > 0 && Number(targetAmount) > 0;
+  const canSave = Number(targetAmount) > 0;
 
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
       await upsertGoal({
         id: goal?.id,
-        name: (fixedName ?? name).trim(),
         targetAmount: Number(targetAmount),
         targetDate: targetDate || null,
-        kind,
       });
       setOpen(false);
     });
@@ -62,21 +53,11 @@ export default function AddGoalSheet({
               </button>
             </div>
 
-            {!fixedName && (
-              <input
-                autoFocus
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={namePlaceholder}
-                className="mt-4 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
-              />
-            )}
-
             <p className="mt-4 text-xs font-medium text-stone-400">Target amount</p>
             <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
               <span className="text-stone-400">$</span>
               <input
-                autoFocus={!!fixedName}
+                autoFocus
                 inputMode="decimal"
                 value={targetAmount}
                 onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9.]/g, ""))}

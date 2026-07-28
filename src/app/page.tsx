@@ -2,14 +2,12 @@ import { getHomeData } from "@/lib/data";
 import { buildNetWorthSeries } from "@/lib/networth";
 import NetWorthCard from "@/components/NetWorthCard";
 import NetWorthGoalCard from "@/components/NetWorthGoalCard";
-import GoalCard from "@/components/GoalCard";
 import MonthGlanceCard from "@/components/MonthGlanceCard";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
-import AddGoalFab from "@/components/AddGoalFab";
 import DateTimeClock from "@/components/DateTimeClock";
 
 export default async function Home() {
-  const { accounts, history, categories, cards, netWorthGoal, customGoal, monthTransactions, settings } =
+  const { accounts, history, categories, cards, netWorthGoal, monthTransactions, settings } =
     await getHomeData();
 
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
@@ -25,12 +23,11 @@ export default async function Home() {
   );
 
   return (
-    <div className="flex flex-col gap-4 px-4 pt-6">
+    <div className="flex h-full flex-col gap-2.5 overflow-hidden px-4 pt-4 pb-24">
       <DateTimeClock />
 
       <NetWorthCard netWorth={netWorth} series={series} />
       <NetWorthGoalCard goal={netWorthGoal} netWorth={netWorth} />
-      <GoalCard goal={customGoal} netWorth={netWorth} />
       <MonthGlanceCard
         transactions={monthTransactions}
         categories={categories}
@@ -38,8 +35,7 @@ export default async function Home() {
         overLimitCards={overLimitCards}
       />
 
-      <AddGoalFab goal={customGoal} />
-      <AddTransactionSheet categories={categories} accounts={accounts} cards={cards} />
+      <AddTransactionSheet categories={categories} accounts={accounts} cards={cards} center />
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default function MonthGlanceCard({
     .sort((a, b) => b.amount - a.amount);
 
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-sm">
+    <div className="rounded-3xl bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-stone-700">
           {MONTH_LABEL.format(new Date())} at a glance

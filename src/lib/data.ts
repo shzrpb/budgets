@@ -76,18 +76,6 @@ export async function getSettings(): Promise<Settings | null> {
   return (data as Settings) ?? null;
 }
 
-export async function getCustomGoal(): Promise<Goal | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("goals")
-    .select("*")
-    .eq("kind", "custom")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  return (data as Goal) ?? null;
-}
-
 export async function getNetWorthGoal(): Promise<Goal | null> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -104,7 +92,6 @@ export interface HomeData {
   categories: Category[];
   cards: Card[];
   netWorthGoal: Goal | null;
-  customGoal: Goal | null;
   monthTransactions: Transaction[];
   settings: Settings | null;
 }
@@ -120,7 +107,6 @@ export async function getHomeData(months = 6): Promise<HomeData> {
     categories: (data?.categories as Category[]) ?? [],
     cards: (data?.cards as Card[]) ?? [],
     netWorthGoal: (data?.net_worth_goal as Goal | null) ?? null,
-    customGoal: (data?.custom_goal as Goal | null) ?? null,
     monthTransactions: (data?.month_transactions as Transaction[]) ?? [],
     settings: (data?.settings as Settings | null) ?? null,
   };

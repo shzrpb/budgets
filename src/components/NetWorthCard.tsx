@@ -9,13 +9,13 @@ export default function NetWorthCard({
   series: TrendPoint[];
 }) {
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-sm">
+    <div className="rounded-3xl bg-white p-4 shadow-sm">
       <p className="text-sm text-stone-500">Net worth</p>
       <p className="mt-1 text-3xl font-semibold tracking-tight">
         ${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}
       </p>
-      <div className="mt-3">
-        <TrendChart data={series} color="#57534e" />
+      <div className="mt-2">
+        <TrendChart data={series} color="#57534e" height={72} />
       </div>
     </div>
   );

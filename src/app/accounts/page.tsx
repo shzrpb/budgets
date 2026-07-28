@@ -1,23 +1,13 @@
-import { getAccountHistories, getAccounts, getCards, getMonthTransactions } from "@/lib/data";
+import { getAccountHistories, getAccounts } from "@/lib/data";
 import { accountTrendSeries, lastNMonthBalances } from "@/lib/networth";
 import AccountsView from "@/components/AccountsView";
 
 export default async function AccountsPage() {
-  const [accounts, cards, monthTransactions] = await Promise.all([
-    getAccounts(),
-    getCards(),
-    getMonthTransactions(),
-  ]);
+  const accounts = await getAccounts();
   const historyByAccount = await getAccountHistories(accounts.map((a) => a.id));
   const histories = accounts.map((a) => historyByAccount.get(a.id) ?? []);
 
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
-
-  const cardMonthSpend = new Map<string, number>();
-  for (const t of monthTransactions) {
-    if (!t.card_id) continue;
-    cardMonthSpend.set(t.card_id, (cardMonthSpend.get(t.card_id) ?? 0) + t.amount);
-  }
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-6">
@@ -29,8 +19,6 @@ export default async function AccountsPage() {
         accounts={accounts}
         accountSeries={histories.map((h) => accountTrendSeries(h))}
         accountLastThreeMonths={histories.map((h) => lastNMonthBalances(h))}
-        cards={cards}
-        cardMonthSpend={cardMonthSpend}
       />
     </div>
   );

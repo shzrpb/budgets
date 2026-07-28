@@ -1,15 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fira_Mono } from "next/font/google";
 import "./globals.css";
 import TopNav from "@/components/TopNav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const firaMono = Fira_Mono({
+  variable: "--font-fira-mono",
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
 });
 
@@ -31,14 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="flex min-h-full flex-col bg-stone-50 text-stone-900">
-        <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
+    <html lang="en" className={`${firaMono.variable} h-full antialiased`}>
+      <body className="flex h-dvh flex-col overflow-hidden bg-stone-50 text-stone-900">
+        <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
           <TopNav />
-          <main className="flex-1 pb-8">{children}</main>
+          <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
         </div>
       </body>
     </html>

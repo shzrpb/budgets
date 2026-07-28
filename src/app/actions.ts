@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { GoalKind, PaymentMethod, Recurrence, TransactionType } from "@/lib/types";
+import type { PaymentMethod, Recurrence, TransactionType } from "@/lib/types";
 
 export async function addTransaction(input: {
   amount: number;
@@ -280,10 +280,8 @@ export async function updateMonthlyBudget(monthlyBudget: number) {
 
 export async function upsertGoal(input: {
   id?: string;
-  name: string;
   targetAmount: number;
   targetDate: string | null;
-  kind?: GoalKind;
 }) {
   const supabase = await createClient();
   const {
@@ -294,19 +292,11 @@ export async function upsertGoal(input: {
   const { error } = await supabase.from("goals").upsert({
     id: input.id,
     user_id: user.id,
-    name: input.name,
+    name: "Net worth goal",
     target_amount: input.targetAmount,
     target_date: input.targetDate,
-    kind: input.kind ?? "custom",
+    kind: "net_worth",
   });
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/");
-}
-
-export async function deleteGoal(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("goals").delete().eq("id", id);
   if (error) throw new Error(error.message);
 
   revalidatePath("/");
