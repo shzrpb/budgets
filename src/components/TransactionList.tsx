@@ -2,6 +2,8 @@
 
 import { useTransition } from "react";
 import { deleteTransaction } from "@/app/actions";
+import FixedTransactionList from "@/components/FixedTransactionList";
+import TransactionIcon from "@/components/TransactionIcon";
 import type { Account, Card, Category, Transaction } from "@/lib/types";
 
 const DAY_LABEL = new Intl.DateTimeFormat("en", {
@@ -24,7 +26,12 @@ export default function TransactionList({
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const accountById = new Map(accounts.map((a) => [a.id, a]));
   const cardById = new Map(cards.map((c) => [c.id, c]));
-  const groups = groupByDay(transactions);
+
+  const fixed = transactions
+    .filter((t) => t.is_fixed)
+    .sort((a, b) => (a.sort_order ?? Number.MAX_SAFE_INTEGER) - (b.sort_order ?? Number.MAX_SAFE_INTEGER));
+  const daily = transactions.filter((t) => !t.is_fixed);
+  const groups = groupByDay(daily);
 
   if (transactions.length === 0) {
     return (
@@ -36,6 +43,18 @@ export default function TransactionList({
 
   return (
     <div className="flex flex-col gap-5">
+      {fixed.length > 0 && (
+        <div>
+          <p className="mb-2 text-xs font-medium text-stone-400">Fixed spend & income</p>
+          <FixedTransactionList
+            transactions={fixed}
+            categories={categories}
+            accounts={accounts}
+            cards={cards}
+          />
+        </div>
+      )}
+
       {groups.map(([day, items]) => (
         <div key={day}>
           <p className="mb-2 text-xs font-medium text-stone-400">
@@ -58,34 +77,29 @@ export default function TransactionList({
   );
 }
 
-function Row({
+function RowContent({
   transaction,
   category,
   account,
   card,
+  trailing,
 }: {
   transaction: Transaction;
   category?: Category;
   account?: Account;
   card?: Card;
+  trailing?: React.ReactNode;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const tint = transaction.type === "income" ? "#7fc9b9" : category?.color ?? "#a8a29e";
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
       <div className="flex items-center gap-3">
         <span
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{
-            backgroundColor: `${transaction.type === "income" ? "#7fc9b9" : (category?.color ?? "#a8a29e")}33`,
-          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+          style={{ backgroundColor: `${tint}33`, color: tint }}
         >
-          <span
-            className="h-2.5 w-2.5 rounded-full"
-            style={{
-              backgroundColor: transaction.type === "income" ? "#7fc9b9" : (category?.color ?? "#a8a29e"),
-            }}
-          />
+          <TransactionIcon name={category?.name} isIncome={transaction.type === "income"} />
         </span>
         <div>
           <p className="text-sm font-medium text-stone-800">
@@ -110,6 +124,32 @@ function Row({
         >
           {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
         </p>
+        {trailing}
+      </div>
+    </div>
+  );
+}
+
+function Row({
+  transaction,
+  category,
+  account,
+  card,
+}: {
+  transaction: Transaction;
+  category?: Category;
+  account?: Account;
+  card?: Card;
+}) {
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <RowContent
+      transaction={transaction}
+      category={category}
+      account={account}
+      card={card}
+      trailing={
         <button
           type="button"
           disabled={isPending}
@@ -121,8 +161,8 @@ function Row({
             <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6" />
           </svg>
         </button>
-      </div>
-    </div>
+      }
+    />
   );
 }
 

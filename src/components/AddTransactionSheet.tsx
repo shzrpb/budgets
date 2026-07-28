@@ -60,7 +60,7 @@ function Sheet({
   const [type, setType] = useState<TransactionType>("spend");
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null);
-  const [accountId, setAccountId] = useState<string | null>(accounts[0]?.id ?? null);
+  const [accountId, setAccountId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit");
   const [cardId, setCardId] = useState<string | null>(cards[0]?.id ?? null);
   const [note, setNote] = useState("");
@@ -70,6 +70,20 @@ function Sheet({
 
   const canSave = Number(amount) > 0;
 
+  const showAccounts = type === "income" || paymentMethod === "cash";
+
+  function handleType(next: TransactionType) {
+    setType(next);
+    if (next === "income") setAccountId((id) => id ?? accounts[0]?.id ?? null);
+    else if (paymentMethod === "credit") setAccountId(null);
+  }
+
+  function handlePaymentMethod(method: PaymentMethod) {
+    setPaymentMethod(method);
+    if (method === "credit") setAccountId(null);
+    else setAccountId((id) => id ?? accounts[0]?.id ?? null);
+  }
+
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
@@ -77,7 +91,7 @@ function Sheet({
         amount: Number(amount),
         type,
         categoryId: type === "spend" ? categoryId : null,
-        accountId,
+        accountId: showAccounts ? accountId : null,
         paymentMethod: type === "spend" ? paymentMethod : null,
         cardId: type === "spend" && paymentMethod === "credit" ? cardId : null,
         note: note || undefined,
@@ -98,7 +112,7 @@ function Sheet({
           <div className="flex rounded-full bg-stone-100 p-1">
             <button
               type="button"
-              onClick={() => setType("spend")}
+              onClick={() => handleType("spend")}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 type === "spend" ? "bg-white shadow-sm text-stone-900" : "text-stone-500"
               }`}
@@ -107,7 +121,7 @@ function Sheet({
             </button>
             <button
               type="button"
-              onClick={() => setType("income")}
+              onClick={() => handleType("income")}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 type === "income" ? "bg-white shadow-sm text-stone-900" : "text-stone-500"
               }`}
@@ -123,7 +137,6 @@ function Sheet({
         <div className="mt-5 flex items-center justify-center">
           <span className="text-2xl text-stone-400">$</span>
           <input
-            autoFocus
             inputMode="decimal"
             placeholder="0.00"
             value={amount}
@@ -159,7 +172,7 @@ function Sheet({
                 <button
                   key={m}
                   type="button"
-                  onClick={() => setPaymentMethod(m)}
+                  onClick={() => handlePaymentMethod(m)}
                   className={`flex-1 rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
                     paymentMethod === m ? "bg-white shadow-sm text-stone-900" : "text-stone-500"
                   }`}
@@ -187,7 +200,7 @@ function Sheet({
           </>
         )}
 
-        {accounts.length > 0 && (
+        {showAccounts && accounts.length > 0 && (
           <>
             <p className="mt-5 text-xs font-medium text-stone-400">Account</p>
             <div className="mt-2 flex flex-wrap gap-2">

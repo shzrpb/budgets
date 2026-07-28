@@ -41,6 +41,61 @@ export async function addTransaction(input: {
   revalidatePath("/transactions");
 }
 
+export async function updateTransaction(
+  id: string,
+  input: {
+    amount: number;
+    type: TransactionType;
+    categoryId: string | null;
+    accountId: string | null;
+    paymentMethod: PaymentMethod | null;
+    cardId?: string | null;
+    note?: string;
+    occurredAt?: string;
+    recurrence?: Recurrence;
+  },
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("transactions")
+    .update({
+      amount: input.amount,
+      type: input.type,
+      category_id: input.categoryId,
+      account_id: input.accountId,
+      payment_method: input.paymentMethod,
+      card_id: input.paymentMethod === "credit" ? input.cardId ?? null : null,
+      note: input.note ?? null,
+      occurred_at: input.occurredAt ?? new Date().toISOString().slice(0, 10),
+      recurrence: input.recurrence ?? "none",
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/transactions");
+}
+
+export async function reorderFixedTransactions(orderedIds: string[]) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase
+        .from("transactions")
+        .update({ sort_order: index })
+        .eq("id", id)
+        .eq("user_id", user.id),
+    ),
+  );
+
+  revalidatePath("/transactions");
+}
+
 export async function deleteTransaction(id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("transactions").delete().eq("id", id);

@@ -50,7 +50,7 @@ export default function AddGoalSheet({
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30">
+        <div className="pointer-events-auto fixed inset-0 z-50 flex items-end justify-center bg-black/30">
           <div className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl">
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
             <div className="flex items-center justify-between">

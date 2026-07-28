@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { deleteCard, updateCardMaxSpend, updateCardNote } from "@/app/actions";
+import SwipeActions from "@/components/SwipeActions";
 import type { Card } from "@/lib/types";
 
 export default function CardItem({
@@ -36,41 +37,39 @@ export default function CardItem({
   }
 
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: card.color }} />
-          <p className="text-sm font-medium text-stone-800">{card.name}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => {
-              setNoteDraft(card.note ?? "");
-              setEditingNote(true);
-            }}
-            className="text-stone-300 transition-colors hover:text-stone-500"
-            aria-label="Edit note"
-          >
+    <SwipeActions
+      actions={[
+        {
+          label: "Edit note",
+          className: "bg-stone-100 text-stone-500",
+          onClick: () => {
+            setNoteDraft(card.note ?? "");
+            setEditingNote(true);
+          },
+          icon: (
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" />
               <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
             </svg>
-          </button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => startTransition(() => deleteCard(card.id))}
-            className="text-stone-300 transition-colors hover:text-red-400"
-            aria-label="Delete card"
-          >
+          ),
+        },
+        {
+          label: "Delete card",
+          className: "bg-red-100 text-red-500",
+          onClick: () => startTransition(() => deleteCard(card.id)),
+          icon: (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6" />
             </svg>
-          </button>
+          ),
+        },
+      ]}
+    >
+      <div className="rounded-3xl bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-3">
+          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: card.color }} />
+          <p className="text-sm font-medium text-stone-800">{card.name}</p>
         </div>
-      </div>
 
       {editingNote ? (
         <div className="mt-3 flex items-center gap-2">
@@ -134,6 +133,7 @@ export default function CardItem({
           ⚠ Over your ${card.max_spend!.toLocaleString()} limit this month
         </p>
       )}
-    </div>
+      </div>
+    </SwipeActions>
   );
 }

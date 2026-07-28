@@ -67,6 +67,7 @@ export interface Transaction {
   occurred_at: string;
   is_fixed: boolean;
   recurrence: Recurrence;
+  sort_order: number | null;
   created_at: string;
 }
 
