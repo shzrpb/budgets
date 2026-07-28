@@ -1,4 +1,4 @@
-import type { AccountBalanceHistoryRow } from "@/lib/types";
+import type { AccountBalanceHistoryRow, AccountClosure } from "@/lib/types";
 
 export interface TrendPoint {
   label: string;
@@ -13,17 +13,25 @@ const MONTH_LABEL = new Intl.DateTimeFormat("en", { month: "short" });
  * account's latest known balance as of each month boundary. History is
  * sparse right after signup (one point per account) — the graph fills
  * in naturally as balances get edited over time.
+ *
+ * A closed account keeps contributing to the months before it closed — you
+ * really did hold that money then — but stops from its closure date on,
+ * rather than carrying its final balance forward forever.
  */
 export function buildNetWorthSeries(
   history: AccountBalanceHistoryRow[],
   months = 6,
+  closures: AccountClosure[] = [],
 ): TrendPoint[] {
   const byAccount = groupByAccount(history);
   const boundaries = monthEndBoundaries(months);
+  const closedAt = new Map(closures.map((c) => [c.id, new Date(c.closed_at)]));
 
   return boundaries.map(({ date, label }) => {
     let total = 0;
-    for (const rows of Object.values(byAccount)) {
+    for (const [accountId, rows] of Object.entries(byAccount)) {
+      const closed = closedAt.get(accountId);
+      if (closed && closed <= date) continue;
       const latest = latestAtOrBefore(rows, date);
       if (latest) total += latest.balance;
     }

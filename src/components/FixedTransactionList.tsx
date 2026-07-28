@@ -2,9 +2,10 @@
 
 import { useRef, useState, useTransition } from "react";
 import { deleteTransaction, reorderFixedTransactions } from "@/app/actions";
-import { EditFixedSheet } from "@/components/AddFixedSheet";
-import SwipeToDelete from "@/components/SwipeToDelete";
+import FixedSheet from "@/components/FixedSheet";
+import SwipeActions from "@/components/SwipeActions";
 import TransactionIcon from "@/components/TransactionIcon";
+import { editDeleteActions } from "@/components/rowActions";
 import type { Account, Card, Category, Transaction } from "@/lib/types";
 
 const LONG_PRESS_MS = 300;
@@ -26,6 +27,7 @@ export default function FixedTransactionList({
 }) {
   const [order, setOrder] = useState(transactions);
   const [syncedKey, setSyncedKey] = useState(() => keyOf(transactions));
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dragIndexRef = useRef<number | null>(null);
@@ -43,6 +45,7 @@ export default function FixedTransactionList({
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const accountById = new Map(accounts.map((a) => [a.id, a]));
   const cardById = new Map(cards.map((c) => [c.id, c]));
+  const editing = order.find((t) => t.id === editingId);
 
   function clearLongPress() {
     if (longPressTimerRef.current) {
@@ -104,46 +107,55 @@ export default function FixedTransactionList({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {order.map((t, index) => (
-        <div
-          key={t.id}
-          ref={(el) => {
-            rowRefs.current[index] = el;
-          }}
-          className="relative"
-          style={{
-            transform: draggingId === t.id ? `translateY(${dragOffset}px)` : undefined,
-            zIndex: draggingId === t.id ? 10 : undefined,
-            transition: draggingId === t.id ? "none" : "transform 150ms ease-out",
-          }}
-        >
-          <SwipeToDelete onDelete={() => startTransition(() => deleteTransaction(t.id))}>
-            <EditFixedSheet
-              transaction={t}
-              categories={categories}
-              accounts={accounts}
-              cards={cards}
-              trigger={
-                <RowContent
-                  transaction={t}
-                  category={t.category_id ? categoryById.get(t.category_id) : undefined}
-                  account={t.account_id ? accountById.get(t.account_id) : undefined}
-                  card={t.card_id ? cardById.get(t.card_id) : undefined}
-                  onHandlePointerDown={(e) => handleHandlePointerDown(e, index, t.id)}
-                  onHandlePointerMove={handleHandlePointerMove}
-                  onHandlePointerUp={handleHandlePointerUp}
-                />
-              }
-            />
-          </SwipeToDelete>
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="flex flex-col gap-2">
+        {order.map((t, index) => (
+          <div
+            key={t.id}
+            ref={(el) => {
+              rowRefs.current[index] = el;
+            }}
+            className="relative"
+            style={{
+              transform: draggingId === t.id ? `translateY(${dragOffset}px)` : undefined,
+              zIndex: draggingId === t.id ? 10 : undefined,
+              transition: draggingId === t.id ? "none" : "transform 150ms ease-out",
+            }}
+          >
+            <SwipeActions
+              actions={editDeleteActions({
+                onEdit: () => setEditingId(t.id),
+                onDelete: () => startTransition(() => deleteTransaction(t.id)),
+              })}
+            >
+              <FixedRow
+                transaction={t}
+                category={t.category_id ? categoryById.get(t.category_id) : undefined}
+                account={t.account_id ? accountById.get(t.account_id) : undefined}
+                card={t.card_id ? cardById.get(t.card_id) : undefined}
+                onHandlePointerDown={(e) => handleHandlePointerDown(e, index, t.id)}
+                onHandlePointerMove={handleHandlePointerMove}
+                onHandlePointerUp={handleHandlePointerUp}
+              />
+            </SwipeActions>
+          </div>
+        ))}
+      </div>
+
+      {editing && (
+        <FixedSheet
+          transaction={editing}
+          categories={categories}
+          accounts={accounts}
+          cards={cards}
+          onClose={() => setEditingId(null)}
+        />
+      )}
+    </>
   );
 }
 
-function RowContent({
+export function FixedRow({
   transaction,
   category,
   account,
@@ -156,9 +168,9 @@ function RowContent({
   category?: Category;
   account?: Account;
   card?: Card;
-  onHandlePointerDown: (e: React.PointerEvent) => void;
-  onHandlePointerMove: (e: React.PointerEvent) => void;
-  onHandlePointerUp: (e: React.PointerEvent) => void;
+  onHandlePointerDown?: (e: React.PointerEvent) => void;
+  onHandlePointerMove?: (e: React.PointerEvent) => void;
+  onHandlePointerUp?: (e: React.PointerEvent) => void;
 }) {
   const tint = transaction.type === "income" ? "#7fc9b9" : category?.color ?? "#a8a29e";
 
@@ -192,28 +204,30 @@ function RowContent({
         >
           {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
         </p>
-        <span
-          role="button"
-          aria-label="Drag to reorder"
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            onHandlePointerDown(e);
-          }}
-          onPointerMove={onHandlePointerMove}
-          onPointerUp={onHandlePointerUp}
-          onClick={(e) => e.stopPropagation()}
-          className="flex h-8 w-6 shrink-0 cursor-grab touch-none items-center justify-center text-stone-300 active:cursor-grabbing"
-          style={{ touchAction: "none" }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="9" cy="6" r="1.5" />
-            <circle cx="15" cy="6" r="1.5" />
-            <circle cx="9" cy="12" r="1.5" />
-            <circle cx="15" cy="12" r="1.5" />
-            <circle cx="9" cy="18" r="1.5" />
-            <circle cx="15" cy="18" r="1.5" />
-          </svg>
-        </span>
+        {onHandlePointerDown && (
+          <span
+            role="button"
+            aria-label="Drag to reorder"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              onHandlePointerDown(e);
+            }}
+            onPointerMove={onHandlePointerMove}
+            onPointerUp={onHandlePointerUp}
+            onClick={(e) => e.stopPropagation()}
+            className="flex h-8 w-6 shrink-0 cursor-grab touch-none items-center justify-center text-stone-300 active:cursor-grabbing"
+            style={{ touchAction: "none" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="9" cy="6" r="1.5" />
+              <circle cx="15" cy="6" r="1.5" />
+              <circle cx="9" cy="12" r="1.5" />
+              <circle cx="15" cy="12" r="1.5" />
+              <circle cx="9" cy="18" r="1.5" />
+              <circle cx="15" cy="18" r="1.5" />
+            </svg>
+          </span>
+        )}
       </div>
     </div>
   );

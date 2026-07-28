@@ -11,11 +11,9 @@ export default function CardsView({
 }) {
   return (
     <>
-      <AddCardSheet />
-
       {cards.length === 0 ? (
         <p className="mt-8 text-center text-sm text-stone-400">
-          No cards yet. Add your first one above.
+          No cards yet. Add your first one below.
         </p>
       ) : (
         <div className="flex flex-col gap-3">
@@ -24,6 +22,8 @@ export default function CardsView({
           ))}
         </div>
       )}
+
+      <AddCardSheet />
     </>
   );
 }

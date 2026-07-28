@@ -7,11 +7,19 @@ import AddTransactionSheet from "@/components/AddTransactionSheet";
 import DateTimeClock from "@/components/DateTimeClock";
 
 export default async function Home() {
-  const { accounts, history, categories, cards, netWorthGoal, monthTransactions, settings } =
-    await getHomeData();
+  const {
+    accounts,
+    accountClosures,
+    history,
+    categories,
+    cards,
+    netWorthGoal,
+    monthTransactions,
+    settings,
+  } = await getHomeData();
 
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
-  const series = buildNetWorthSeries(history);
+  const series = buildNetWorthSeries(history, 6, accountClosures);
 
   const cardMonthSpend = new Map<string, number>();
   for (const t of monthTransactions) {

@@ -3,13 +3,17 @@
 import { useRef, useState } from "react";
 
 const ACTION_WIDTH = 56;
+const CONFIRM_WIDTH = 104;
 const DRAG_THRESHOLD = 10;
+const CONFIRM_TIMEOUT_MS = 3000;
 
 export interface SwipeAction {
   label: string;
   icon: React.ReactNode;
   onClick: () => void;
   className?: string;
+  /** When set, the first tap swaps the icon for this label and a second tap commits. */
+  confirmLabel?: string;
 }
 
 export default function SwipeActions({
@@ -19,13 +23,22 @@ export default function SwipeActions({
   actions: SwipeAction[];
   children: React.ReactNode;
 }) {
-  const revealWidth = actions.length * ACTION_WIDTH;
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const revealWidth =
+    actions.length * ACTION_WIDTH + (confirming ? CONFIRM_WIDTH - ACTION_WIDTH : 0);
   const [translateX, setTranslateX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const openRef = useRef(0);
   const startXRef = useRef(0);
   const draggedRef = useRef(false);
   const wasOpenAtStartRef = useRef(false);
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function clearConfirm() {
+    if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+    confirmTimerRef.current = null;
+    setConfirming(null);
+  }
 
   function handlePointerDown(e: React.PointerEvent) {
     startXRef.current = e.clientX;
@@ -49,34 +62,51 @@ export default function SwipeActions({
       const shouldOpen = translateX < -revealWidth / 2;
       openRef.current = shouldOpen ? -revealWidth : 0;
       setTranslateX(openRef.current);
+      if (!shouldOpen) clearConfirm();
     } else if (openRef.current !== 0) {
-      openRef.current = 0;
-      setTranslateX(0);
+      close();
     }
   }
 
   function close() {
     openRef.current = 0;
     setTranslateX(0);
+    clearConfirm();
+  }
+
+  function handleAction(action: SwipeAction) {
+    if (action.confirmLabel && confirming !== action.label) {
+      setConfirming(action.label);
+      // Widen the tray so the confirm pill isn't clipped by the row edge.
+      openRef.current = -(actions.length * ACTION_WIDTH + CONFIRM_WIDTH - ACTION_WIDTH);
+      setTranslateX(openRef.current);
+      if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
+      confirmTimerRef.current = setTimeout(clearConfirm, CONFIRM_TIMEOUT_MS);
+      return;
+    }
+    close();
+    action.onClick();
   }
 
   return (
     <div className="relative overflow-hidden rounded-3xl">
       <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-2">
-        {actions.map((action) => (
-          <button
-            key={action.label}
-            type="button"
-            onClick={() => {
-              close();
-              action.onClick();
-            }}
-            aria-label={action.label}
-            className={`flex h-11 w-11 items-center justify-center rounded-full ${action.className ?? "bg-stone-100 text-stone-500"}`}
-          >
-            {action.icon}
-          </button>
-        ))}
+        {actions.map((action) => {
+          const isConfirming = confirming === action.label;
+          return (
+            <button
+              key={action.label}
+              type="button"
+              onClick={() => handleAction(action)}
+              aria-label={isConfirming ? action.confirmLabel : action.label}
+              className={`flex h-11 items-center justify-center rounded-full text-xs font-semibold transition-all ${
+                isConfirming ? "w-[6rem]" : "w-11"
+              } ${action.className ?? "bg-stone-100 text-stone-500"}`}
+            >
+              {isConfirming ? action.confirmLabel : action.icon}
+            </button>
+          );
+        })}
       </div>
 
       <div
@@ -89,7 +119,7 @@ export default function SwipeActions({
             e.stopPropagation();
           }
         }}
-        className="w-full"
+        className="w-full select-none"
         style={{
           transform: `translateX(${translateX}px)`,
           transition: dragging ? "none" : "transform 200ms ease-out",

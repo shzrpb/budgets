@@ -162,6 +162,67 @@ export async function updateAccountBalance(accountId: string, balance: number) {
   revalidatePath("/accounts");
 }
 
+export async function updateAccount(
+  accountId: string,
+  input: { name: string; type: string; color: string; balance: number },
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const { data: existing } = await supabase
+    .from("accounts")
+    .select("balance")
+    .eq("id", accountId)
+    .single();
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({
+      name: input.name,
+      type: input.type,
+      color: input.color,
+      balance: input.balance,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", accountId);
+  if (error) throw new Error(error.message);
+
+  // Only snapshot history when the balance actually moved, so renaming or
+  // recolouring an account doesn't pollute the trend chart.
+  if (existing && existing.balance !== input.balance) {
+    await supabase.from("account_balance_history").insert({
+      account_id: accountId,
+      user_id: user.id,
+      balance: input.balance,
+    });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+}
+
+/**
+ * Closes an account rather than deleting the row. Balance history cascades
+ * off accounts, so a hard delete would retroactively erase the months you
+ * genuinely held that money. The account drops out of every list and out of
+ * today's net worth; past months keep their balances.
+ */
+export async function deleteAccount(accountId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("accounts")
+    .update({ closed_at: new Date().toISOString() })
+    .eq("id", accountId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+  revalidatePath("/transactions");
+}
+
 export async function addBalanceHistoryEntry(
   accountId: string,
   balance: number,
@@ -224,9 +285,26 @@ export async function addCard(input: {
   });
   if (error) throw new Error(error.message);
 
-  revalidatePath("/");
-  revalidatePath("/accounts");
-  revalidatePath("/transactions");
+  revalidateCards();
+}
+
+export async function updateCard(
+  cardId: string,
+  input: { name: string; color: string; maxSpend: number | null; note?: string | null },
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("cards")
+    .update({
+      name: input.name,
+      color: input.color,
+      max_spend: input.maxSpend,
+      note: input.note ?? null,
+    })
+    .eq("id", cardId);
+  if (error) throw new Error(error.message);
+
+  revalidateCards();
 }
 
 export async function updateCardMaxSpend(cardId: string, maxSpend: number | null) {
@@ -237,20 +315,7 @@ export async function updateCardMaxSpend(cardId: string, maxSpend: number | null
     .eq("id", cardId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/");
-  revalidatePath("/accounts");
-}
-
-export async function updateCardNote(cardId: string, note: string | null) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("cards")
-    .update({ note })
-    .eq("id", cardId);
-  if (error) throw new Error(error.message);
-
-  revalidatePath("/");
-  revalidatePath("/accounts");
+  revalidateCards();
 }
 
 export async function deleteCard(cardId: string) {
@@ -258,8 +323,12 @@ export async function deleteCard(cardId: string) {
   const { error } = await supabase.from("cards").delete().eq("id", cardId);
   if (error) throw new Error(error.message);
 
+  revalidateCards();
+}
+
+function revalidateCards() {
   revalidatePath("/");
-  revalidatePath("/accounts");
+  revalidatePath("/cards");
   revalidatePath("/transactions");
 }
 

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   Account,
   AccountBalanceHistoryRow,
+  AccountClosure,
   Card,
   Category,
   Goal,
@@ -11,8 +12,22 @@ import type {
 
 export async function getAccounts(): Promise<Account[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("accounts").select("*").order("created_at");
+  const { data } = await supabase
+    .from("accounts")
+    .select("*")
+    .is("closed_at", null)
+    .order("created_at");
   return (data as Account[]) ?? [];
+}
+
+/** Closed accounts keep their balance history; the series needs to know when they stopped counting. */
+export async function getAccountClosures(): Promise<AccountClosure[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("accounts")
+    .select("id, closed_at")
+    .not("closed_at", "is", null);
+  return (data as AccountClosure[]) ?? [];
 }
 
 export async function getCards(): Promise<Card[]> {
@@ -88,6 +103,7 @@ export async function getNetWorthGoal(): Promise<Goal | null> {
 
 export interface HomeData {
   accounts: Account[];
+  accountClosures: AccountClosure[];
   history: AccountBalanceHistoryRow[];
   categories: Category[];
   cards: Card[];
@@ -103,6 +119,7 @@ export async function getHomeData(months = 6): Promise<HomeData> {
 
   return {
     accounts: (data?.accounts as Account[]) ?? [],
+    accountClosures: (data?.account_closures as AccountClosure[]) ?? [],
     history: (data?.balance_history as AccountBalanceHistoryRow[]) ?? [],
     categories: (data?.categories as Category[]) ?? [],
     cards: (data?.cards as Card[]) ?? [],

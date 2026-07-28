@@ -34,6 +34,13 @@ export interface Account {
   color: string;
   updated_at: string;
   created_at: string;
+  /** Set when the account is closed; it keeps its history but stops counting. */
+  closed_at: string | null;
+}
+
+export interface AccountClosure {
+  id: string;
+  closed_at: string;
 }
 
 export interface AccountBalanceHistoryRow {

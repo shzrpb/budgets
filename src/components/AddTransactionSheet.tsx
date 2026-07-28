@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { addTransaction } from "@/app/actions";
+import { addTransaction, updateTransaction } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
 import AddCategorySheet from "@/components/AddCategorySheet";
-import type { Account, Card, Category, PaymentMethod, TransactionType } from "@/lib/types";
+import type { Account, Card, Category, PaymentMethod, Transaction, TransactionType } from "@/lib/types";
 
 export default function AddTransactionSheet({
   categories,
@@ -48,24 +48,58 @@ export default function AddTransactionSheet({
   );
 }
 
-function Sheet({
+export function EditTransactionSheet({
+  transaction,
   categories,
   accounts,
   cards,
   onClose,
 }: {
+  transaction: Transaction;
   categories: Category[];
   accounts: Account[];
   cards: Card[];
   onClose: () => void;
 }) {
-  const [type, setType] = useState<TransactionType>("spend");
-  const [amount, setAmount] = useState("");
-  const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null);
-  const [accountId, setAccountId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit");
-  const [cardId, setCardId] = useState<string | null>(cards[0]?.id ?? null);
-  const [note, setNote] = useState("");
+  return (
+    <Sheet
+      transaction={transaction}
+      categories={categories}
+      accounts={accounts}
+      cards={cards}
+      onClose={onClose}
+    />
+  );
+}
+
+function Sheet({
+  transaction,
+  categories,
+  accounts,
+  cards,
+  onClose,
+}: {
+  transaction?: Transaction;
+  categories: Category[];
+  accounts: Account[];
+  cards: Card[];
+  onClose: () => void;
+}) {
+  const isEdit = !!transaction;
+  const [type, setType] = useState<TransactionType>(transaction?.type ?? "spend");
+  const [amount, setAmount] = useState(transaction?.amount.toString() ?? "");
+  const [categoryId, setCategoryId] = useState<string | null>(
+    transaction?.category_id ?? categories[0]?.id ?? null,
+  );
+  const [accountId, setAccountId] = useState<string | null>(transaction?.account_id ?? null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    transaction?.payment_method ?? "credit",
+  );
+  const [cardId, setCardId] = useState<string | null>(transaction?.card_id ?? cards[0]?.id ?? null);
+  const [note, setNote] = useState(transaction?.note ?? "");
+  const [occurredAt, setOccurredAt] = useState(
+    transaction?.occurred_at ?? new Date().toISOString().slice(0, 10),
+  );
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState(false);
   const [addingCategory, setAddingCategory] = useState(false);
@@ -89,7 +123,7 @@ function Sheet({
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
-      await addTransaction({
+      const input = {
         amount: Number(amount),
         type,
         categoryId: type === "spend" ? categoryId : null,
@@ -97,7 +131,13 @@ function Sheet({
         paymentMethod: type === "spend" ? paymentMethod : null,
         cardId: type === "spend" && paymentMethod === "credit" ? cardId : null,
         note: note || undefined,
-      });
+      };
+      if (isEdit) {
+        await updateTransaction(transaction!.id, { ...input, occurredAt });
+        onClose();
+        return;
+      }
+      await addTransaction(input);
       setToast(true);
       setTimeout(() => {
         onClose();
@@ -218,10 +258,22 @@ function Sheet({
           </>
         )}
 
+        {isEdit && (
+          <>
+            <p className="mt-5 text-xs font-medium text-stone-400">Date</p>
+            <input
+              type="date"
+              value={occurredAt}
+              onChange={(e) => setOccurredAt(e.target.value)}
+              className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
+            />
+          </>
+        )}
+
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Add a note (optional)"
+          placeholder="What was it for? e.g. Guzman"
           className="mt-5 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
         />
 
@@ -231,7 +283,7 @@ function Sheet({
           onClick={handleSave}
           className="mt-5 w-full rounded-2xl bg-stone-900 py-3.5 text-sm font-medium text-white transition-colors disabled:opacity-40"
         >
-          {toast ? "Saved" : isPending ? "Saving…" : `Save ${type}`}
+          {toast ? "Saved" : isPending ? "Saving…" : isEdit ? "Save changes" : `Save ${type}`}
         </button>
       </div>
 

@@ -6,76 +6,7 @@ import CategoryPill from "@/components/CategoryPill";
 import AddCategorySheet from "@/components/AddCategorySheet";
 import type { Account, Card, Category, PaymentMethod, Recurrence, Transaction, TransactionType } from "@/lib/types";
 
-export default function AddFixedSheet({
-  categories,
-  accounts,
-  cards = [],
-}: {
-  categories: Category[];
-  accounts: Account[];
-  cards?: Card[];
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="w-full rounded-2xl border border-dashed border-stone-300 py-3 text-sm font-medium text-stone-500 transition-colors hover:border-stone-400 hover:text-stone-700"
-      >
-        + Fixed spend or income
-      </button>
-
-      {open && (
-        <FixedSheetForm
-          categories={categories}
-          accounts={accounts}
-          cards={cards}
-          onClose={() => setOpen(false)}
-        />
-      )}
-    </>
-  );
-}
-
-export function EditFixedSheet({
-  transaction,
-  categories,
-  accounts,
-  cards = [],
-  trigger,
-  triggerClassName = "block w-full text-left",
-}: {
-  transaction: Transaction;
-  categories: Category[];
-  accounts: Account[];
-  cards?: Card[];
-  trigger: React.ReactNode;
-  triggerClassName?: string;
-}) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <>
-      <button type="button" onClick={() => setOpen(true)} className={triggerClassName}>
-        {trigger}
-      </button>
-
-      {open && (
-        <FixedSheetForm
-          transaction={transaction}
-          categories={categories}
-          accounts={accounts}
-          cards={cards}
-          onClose={() => setOpen(false)}
-        />
-      )}
-    </>
-  );
-}
-
-function FixedSheetForm({
+export default function FixedSheetForm({
   transaction,
   categories,
   accounts,

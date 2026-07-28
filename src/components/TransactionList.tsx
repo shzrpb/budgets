@@ -1,9 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { deleteTransaction } from "@/app/actions";
-import FixedTransactionList from "@/components/FixedTransactionList";
+import { EditTransactionSheet } from "@/components/AddTransactionSheet";
+import FixedTransactionsSection from "@/components/FixedTransactionsSection";
+import SwipeActions from "@/components/SwipeActions";
 import TransactionIcon from "@/components/TransactionIcon";
+import { editDeleteActions } from "@/components/rowActions";
 import type { Account, Card, Category, Transaction } from "@/lib/types";
 
 const DAY_LABEL = new Intl.DateTimeFormat("en", {
@@ -33,99 +36,42 @@ export default function TransactionList({
   const daily = transactions.filter((t) => !t.is_fixed);
   const groups = groupByDay(daily);
 
-  if (transactions.length === 0) {
-    return (
-      <p className="mt-8 text-center text-sm text-stone-400">
-        No transactions yet. Tap + to log your first one.
-      </p>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-5">
-      {fixed.length > 0 && (
-        <div>
-          <p className="mb-2 text-xs font-medium text-stone-400">Fixed spend & income</p>
-          <FixedTransactionList
-            transactions={fixed}
-            categories={categories}
-            accounts={accounts}
-            cards={cards}
-          />
-        </div>
-      )}
+      <FixedTransactionsSection
+        transactions={fixed}
+        categories={categories}
+        accounts={accounts}
+        cards={cards}
+      />
 
-      {groups.map(([day, items]) => (
-        <div key={day}>
-          <p className="mb-2 text-xs font-medium text-stone-400">
-            {DAY_LABEL.format(new Date(`${day}T00:00:00`))}
-          </p>
-          <div className="flex flex-col gap-2">
-            {items.map((t) => (
-              <Row
-                key={t.id}
-                transaction={t}
-                category={t.category_id ? categoryById.get(t.category_id) : undefined}
-                account={t.account_id ? accountById.get(t.account_id) : undefined}
-                card={t.card_id ? cardById.get(t.card_id) : undefined}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function RowContent({
-  transaction,
-  category,
-  account,
-  card,
-  trailing,
-}: {
-  transaction: Transaction;
-  category?: Category;
-  account?: Account;
-  card?: Card;
-  trailing?: React.ReactNode;
-}) {
-  const tint = transaction.type === "income" ? "#7fc9b9" : category?.color ?? "#a8a29e";
-
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-          style={{ backgroundColor: `${tint}33`, color: tint }}
-        >
-          <TransactionIcon name={category?.name} isIncome={transaction.type === "income"} />
-        </span>
-        <div>
-          <p className="text-sm font-medium text-stone-800">
-            {transaction.type === "income" ? "Income" : category?.name ?? "Uncategorized"}
-            {transaction.is_fixed && (
-              <span className="ml-1.5 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500">
-                {transaction.recurrence}
-              </span>
-            )}
-          </p>
-          <p className="text-xs text-stone-400">
-            {[account?.name, card?.name ?? transaction.payment_method].filter(Boolean).join(" · ") ||
-              (transaction.note ?? undefined)}
-          </p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <p
-          className={`text-sm font-semibold ${
-            transaction.type === "income" ? "text-emerald-600" : "text-stone-900"
-          }`}
-        >
-          {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
+      {daily.length === 0 ? (
+        <p className="mt-4 text-center text-sm text-stone-400">
+          No spending logged yet. Tap + to add one.
         </p>
-        {trailing}
-      </div>
+      ) : (
+        groups.map(([day, items]) => (
+          <div key={day}>
+            <p className="mb-2 text-xs font-medium text-stone-400">
+              {DAY_LABEL.format(new Date(`${day}T00:00:00`))}
+            </p>
+            <div className="flex flex-col gap-2">
+              {items.map((t) => (
+                <Row
+                  key={t.id}
+                  transaction={t}
+                  category={t.category_id ? categoryById.get(t.category_id) : undefined}
+                  account={t.account_id ? accountById.get(t.account_id) : undefined}
+                  card={t.card_id ? cardById.get(t.card_id) : undefined}
+                  categories={categories}
+                  accounts={accounts}
+                  cards={cards}
+                />
+              ))}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
@@ -135,34 +81,75 @@ function Row({
   category,
   account,
   card,
+  categories,
+  accounts,
+  cards,
 }: {
   transaction: Transaction;
   category?: Category;
   account?: Account;
   card?: Card;
+  categories: Category[];
+  accounts: Account[];
+  cards: Card[];
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [editing, setEditing] = useState(false);
+  const [, startTransition] = useTransition();
+
+  const tint = transaction.type === "income" ? "#7fc9b9" : category?.color ?? "#a8a29e";
+  const categoryName =
+    transaction.type === "income" ? "Income" : category?.name ?? "Uncategorized";
+  // The merchant (note) is what you actually recognise in a list of spends;
+  // the category is context, so it drops to the subtitle.
+  const title = transaction.note?.trim() || categoryName;
+  const subtitle = [
+    title === categoryName ? null : categoryName,
+    card?.name ?? account?.name ?? transaction.payment_method,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <RowContent
-      transaction={transaction}
-      category={category}
-      account={account}
-      card={card}
-      trailing={
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={() => startTransition(() => deleteTransaction(transaction.id))}
-          className="text-stone-300 transition-colors hover:text-red-400"
-          aria-label="Delete transaction"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6" />
-          </svg>
-        </button>
-      }
-    />
+    <>
+      <SwipeActions
+        actions={editDeleteActions({
+          onEdit: () => setEditing(true),
+          onDelete: () => startTransition(() => deleteTransaction(transaction.id)),
+        })}
+      >
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              style={{ backgroundColor: `${tint}33`, color: tint }}
+            >
+              <TransactionIcon name={category?.name} isIncome={transaction.type === "income"} />
+            </span>
+            <div>
+              <p className="text-sm font-medium text-stone-800">{title}</p>
+              <p className="text-xs text-stone-400">{subtitle}</p>
+            </div>
+          </div>
+          <p
+            className={`text-sm font-semibold ${
+              transaction.type === "income" ? "text-emerald-600" : "text-stone-900"
+            }`}
+          >
+            {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
+          </p>
+        </div>
+      </SwipeActions>
+
+      {editing && (
+        <EditTransactionSheet
+          transaction={transaction}
+          categories={categories}
+          accounts={accounts}
+          cards={cards}
+          onClose={() => setEditing(false)}
+        />
+      )}
+    </>
   );
 }
 
