@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { deleteTransaction } from "@/app/actions";
-import type { Account, Category, Transaction } from "@/lib/types";
+import type { Account, Card, Category, Transaction } from "@/lib/types";
 
 const DAY_LABEL = new Intl.DateTimeFormat("en", {
   weekday: "short",
@@ -14,13 +14,16 @@ export default function TransactionList({
   transactions,
   categories,
   accounts,
+  cards = [],
 }: {
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];
+  cards?: Card[];
 }) {
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const accountById = new Map(accounts.map((a) => [a.id, a]));
+  const cardById = new Map(cards.map((c) => [c.id, c]));
   const groups = groupByDay(transactions);
 
   if (transactions.length === 0) {
@@ -45,6 +48,7 @@ export default function TransactionList({
                 transaction={t}
                 category={t.category_id ? categoryById.get(t.category_id) : undefined}
                 account={t.account_id ? accountById.get(t.account_id) : undefined}
+                card={t.card_id ? cardById.get(t.card_id) : undefined}
               />
             ))}
           </div>
@@ -58,10 +62,12 @@ function Row({
   transaction,
   category,
   account,
+  card,
 }: {
   transaction: Transaction;
   category?: Category;
   account?: Account;
+  card?: Card;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -91,7 +97,7 @@ function Row({
             )}
           </p>
           <p className="text-xs text-stone-400">
-            {[account?.name, transaction.payment_method].filter(Boolean).join(" · ") ||
+            {[account?.name, card?.name ?? transaction.payment_method].filter(Boolean).join(" · ") ||
               (transaction.note ?? undefined)}
           </p>
         </div>

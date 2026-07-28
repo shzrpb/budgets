@@ -10,6 +10,7 @@ export async function addTransaction(input: {
   categoryId: string | null;
   accountId: string | null;
   paymentMethod: PaymentMethod | null;
+  cardId?: string | null;
   note?: string;
   occurredAt?: string;
   isFixed?: boolean;
@@ -28,6 +29,7 @@ export async function addTransaction(input: {
     category_id: input.categoryId,
     account_id: input.accountId,
     payment_method: input.paymentMethod,
+    card_id: input.paymentMethod === "credit" ? input.cardId ?? null : null,
     note: input.note ?? null,
     occurred_at: input.occurredAt ?? new Date().toISOString().slice(0, 10),
     is_fixed: input.isFixed ?? false,
@@ -144,6 +146,52 @@ export async function addBalanceHistoryEntry(
 
   revalidatePath("/");
   revalidatePath("/accounts");
+}
+
+export async function addCard(input: {
+  name: string;
+  color: string;
+  maxSpend: number | null;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const { error } = await supabase.from("cards").insert({
+    user_id: user.id,
+    name: input.name,
+    color: input.color,
+    max_spend: input.maxSpend,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+  revalidatePath("/transactions");
+}
+
+export async function updateCardMaxSpend(cardId: string, maxSpend: number | null) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("cards")
+    .update({ max_spend: maxSpend })
+    .eq("id", cardId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+}
+
+export async function deleteCard(cardId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("cards").delete().eq("id", cardId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+  revalidatePath("/transactions");
 }
 
 export async function updateMonthlyBudget(monthlyBudget: number) {

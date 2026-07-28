@@ -1,5 +1,5 @@
 import CategoryPill from "@/components/CategoryPill";
-import type { Category, Transaction } from "@/lib/types";
+import type { Card, Category, Transaction } from "@/lib/types";
 
 const MONTH_LABEL = new Intl.DateTimeFormat("en", { month: "long" });
 
@@ -7,10 +7,12 @@ export default function MonthGlanceCard({
   transactions,
   categories,
   monthlyBudget,
+  overLimitCards = [],
 }: {
   transactions: Transaction[];
   categories: Category[];
   monthlyBudget: number;
+  overLimitCards?: Card[];
 }) {
   const spent = transactions.reduce((sum, t) => sum + t.amount, 0);
   const progress = monthlyBudget > 0 ? Math.min(spent / monthlyBudget, 1) : 0;
@@ -42,6 +44,12 @@ export default function MonthGlanceCard({
           style={{ width: `${progress * 100}%` }}
         />
       </div>
+
+      {overLimitCards.length > 0 && (
+        <p className="mt-3 text-xs font-medium text-red-500">
+          ⚠ Over limit: {overLimitCards.map((c) => c.name).join(", ")}
+        </p>
+      )}
 
       {categoryTotals.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">

@@ -44,11 +44,21 @@ export interface AccountBalanceHistoryRow {
   recorded_at: string;
 }
 
+export interface Card {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  max_spend: number | null;
+  created_at: string;
+}
+
 export interface Transaction {
   id: string;
   user_id: string;
   account_id: string | null;
   category_id: string | null;
+  card_id: string | null;
   amount: number;
   type: TransactionType;
   payment_method: PaymentMethod | null;

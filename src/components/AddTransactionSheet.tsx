@@ -4,14 +4,16 @@ import { useState, useTransition } from "react";
 import { addTransaction } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
 import AddCategorySheet from "@/components/AddCategorySheet";
-import type { Account, Category, PaymentMethod, TransactionType } from "@/lib/types";
+import type { Account, Card, Category, PaymentMethod, TransactionType } from "@/lib/types";
 
 export default function AddTransactionSheet({
   categories,
   accounts,
+  cards = [],
 }: {
   categories: Category[];
   accounts: Account[];
+  cards?: Card[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -36,6 +38,7 @@ export default function AddTransactionSheet({
         <Sheet
           categories={categories}
           accounts={accounts}
+          cards={cards}
           onClose={() => setOpen(false)}
         />
       )}
@@ -46,10 +49,12 @@ export default function AddTransactionSheet({
 function Sheet({
   categories,
   accounts,
+  cards,
   onClose,
 }: {
   categories: Category[];
   accounts: Account[];
+  cards: Card[];
   onClose: () => void;
 }) {
   const [type, setType] = useState<TransactionType>("spend");
@@ -57,6 +62,7 @@ function Sheet({
   const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null);
   const [accountId, setAccountId] = useState<string | null>(accounts[0]?.id ?? null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit");
+  const [cardId, setCardId] = useState<string | null>(cards[0]?.id ?? null);
   const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState(false);
@@ -73,6 +79,7 @@ function Sheet({
         categoryId: type === "spend" ? categoryId : null,
         accountId,
         paymentMethod: type === "spend" ? paymentMethod : null,
+        cardId: type === "spend" && paymentMethod === "credit" ? cardId : null,
         note: note || undefined,
       });
       setToast(true);
@@ -161,6 +168,22 @@ function Sheet({
                 </button>
               ))}
             </div>
+
+            {paymentMethod === "credit" && cards.length > 0 && (
+              <>
+                <p className="mt-5 text-xs font-medium text-stone-400">Card</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {cards.map((c) => (
+                    <CategoryPill
+                      key={c.id}
+                      name={c.name}
+                      selected={cardId === c.id}
+                      onClick={() => setCardId(c.id)}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </>
         )}
 

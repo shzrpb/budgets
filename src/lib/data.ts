@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import type {
   Account,
   AccountBalanceHistoryRow,
+  Card,
   Category,
   Goal,
   Settings,
@@ -12,6 +13,12 @@ export async function getAccounts(): Promise<Account[]> {
   const supabase = await createClient();
   const { data } = await supabase.from("accounts").select("*").order("created_at");
   return (data as Account[]) ?? [];
+}
+
+export async function getCards(): Promise<Card[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("cards").select("*").order("created_at");
+  return (data as Card[]) ?? [];
 }
 
 export async function getBalanceHistory(months = 6): Promise<AccountBalanceHistoryRow[]> {
