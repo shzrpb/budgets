@@ -50,6 +50,7 @@ export interface Card {
   name: string;
   color: string;
   max_spend: number | null;
+  note: string | null;
   created_at: string;
 }
 

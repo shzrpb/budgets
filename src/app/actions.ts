@@ -184,6 +184,18 @@ export async function updateCardMaxSpend(cardId: string, maxSpend: number | null
   revalidatePath("/accounts");
 }
 
+export async function updateCardNote(cardId: string, note: string | null) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("cards")
+    .update({ note })
+    .eq("id", cardId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+  revalidatePath("/accounts");
+}
+
 export async function deleteCard(cardId: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("cards").delete().eq("id", cardId);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { deleteCard, updateCardMaxSpend } from "@/app/actions";
+import { deleteCard, updateCardMaxSpend, updateCardNote } from "@/app/actions";
 import type { Card } from "@/lib/types";
 
 export default function CardItem({
@@ -13,7 +13,14 @@ export default function CardItem({
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(card.max_spend?.toString() ?? "");
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteDraft, setNoteDraft] = useState(card.note ?? "");
   const [isPending, startTransition] = useTransition();
+
+  function saveNote() {
+    startTransition(() => updateCardNote(card.id, noteDraft.trim() || null));
+    setEditingNote(false);
+  }
 
   const over = card.max_spend != null && monthSpend > card.max_spend;
   const progress = card.max_spend ? Math.min(monthSpend / card.max_spend, 1) : 0;
@@ -35,18 +42,52 @@ export default function CardItem({
           <span className="h-3 w-3 rounded-full" style={{ backgroundColor: card.color }} />
           <p className="text-sm font-medium text-stone-800">{card.name}</p>
         </div>
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={() => startTransition(() => deleteCard(card.id))}
-          className="text-stone-300 transition-colors hover:text-red-400"
-          aria-label="Delete card"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => {
+              setNoteDraft(card.note ?? "");
+              setEditingNote(true);
+            }}
+            className="text-stone-300 transition-colors hover:text-stone-500"
+            aria-label="Edit note"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => startTransition(() => deleteCard(card.id))}
+            className="text-stone-300 transition-colors hover:text-red-400"
+            aria-label="Delete card"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6" />
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {editingNote ? (
+        <div className="mt-3 flex items-center gap-2">
+          <input
+            autoFocus
+            value={noteDraft}
+            onChange={(e) => setNoteDraft(e.target.value)}
+            onBlur={saveNote}
+            onKeyDown={(e) => e.key === "Enter" && saveNote()}
+            placeholder="e.g. 5x miles on dining"
+            maxLength={80}
+            className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs outline-none focus:border-stone-400"
+          />
+        </div>
+      ) : (
+        card.note && <p className="mt-2 text-xs text-stone-400">{card.note}</p>
+      )}
 
       <div className="mt-3 flex items-center justify-between text-xs text-stone-500">
         <span>This month: ${monthSpend.toLocaleString()}</span>
