@@ -56,7 +56,7 @@ export default function CardDueReminder({
             <p>
               <span className="font-medium">{card.name}</span> bill {dueLabel(days)}
             </p>
-            <p className="text-orange-600/70">
+            <p className="font-mono text-orange-600/70">
               {formatDueDate(due)} · ${outstanding.toLocaleString()}
             </p>
           </div>
@@ -65,7 +65,7 @@ export default function CardDueReminder({
             onClick={() => setPaying(card)}
             className="shrink-0 rounded-full bg-orange-600 px-3 py-1 text-xs font-semibold text-white"
           >
-            Paid
+            Mark paid
           </button>
         </div>
       ))}
@@ -117,7 +117,7 @@ function PayBillSheet({
           </button>
         </div>
 
-        <p className="mt-4 text-center text-3xl font-semibold tracking-tight">
+        <p className="mt-4 text-center font-mono text-3xl font-semibold tracking-tight">
           ${amount.toLocaleString()}
         </p>
 

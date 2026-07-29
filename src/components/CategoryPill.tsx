@@ -27,7 +27,7 @@ export default function CategoryPill({
     <>
       <span className="font-medium">{name}</span>
       {amount !== undefined && (
-        <span className={selected ? "text-stone-300" : "text-stone-500"}>
+        <span className={`font-mono ${selected ? "text-stone-300" : "text-stone-500"}`}>
           ${amount.toLocaleString()}
         </span>
       )}

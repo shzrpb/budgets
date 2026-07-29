@@ -22,14 +22,12 @@ export default function AddTransactionSheet({
 
   return (
     <>
-      {/* Sits centered on the bottom nav bar, half-overlapping its top edge
-          like a standard tab-bar FAB. The bottom offset mirrors TopNav's own
-          padding + pill height so the overlap holds across safe areas. Hidden
-          whenever any sheet (this one or another) is open. */}
+      {/* Bottom-right FAB, clear of the pill nav bar. Hidden whenever any
+          sheet (this one or another) is open. */}
       {!anySheetOpen && (
         <div
-          className="pointer-events-none fixed inset-x-0 z-50 flex justify-center"
-          style={{ bottom: "calc(max(1rem, env(safe-area-inset-bottom)) + 28px)" }}
+          className="pointer-events-none fixed inset-x-0 z-50 flex justify-end pr-5"
+          style={{ bottom: "calc(max(1rem, env(safe-area-inset-bottom)) + 76px)" }}
         >
           <button
             type="button"

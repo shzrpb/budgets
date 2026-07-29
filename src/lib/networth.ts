@@ -39,6 +39,33 @@ export function buildNetWorthSeries(
   });
 }
 
+/**
+ * Net worth as of a given date, carrying forward each account's latest
+ * known balance at or before that date (same logic as buildNetWorthSeries,
+ * for a single arbitrary cutoff rather than a series of month boundaries).
+ */
+export function netWorthAsOf(
+  history: AccountBalanceHistoryRow[],
+  date: Date,
+  closures: AccountClosure[] = [],
+): number {
+  const byAccount = groupByAccount(history);
+  const closedAt = new Map(closures.map((c) => [c.id, new Date(c.closed_at)]));
+  let total = 0;
+  for (const [accountId, rows] of Object.entries(byAccount)) {
+    const closed = closedAt.get(accountId);
+    if (closed && closed <= date) continue;
+    const latest = latestAtOrBefore(rows, date);
+    if (latest) total += latest.balance;
+  }
+  return total;
+}
+
+/** True if there's at least one history row at or before the given date — i.e. we have a real baseline to diff against, not just sparse post-signup data. */
+export function hasHistoryAtOrBefore(history: AccountBalanceHistoryRow[], date: Date): boolean {
+  return history.some((row) => new Date(row.recorded_at) <= date);
+}
+
 /** Raw balance-over-time points for a single account, oldest first. */
 export function accountTrendSeries(history: AccountBalanceHistoryRow[]): TrendPoint[] {
   return [...history]

@@ -1,11 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Fira_Mono } from "next/font/google";
+import { Fira_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import TopNav from "@/components/TopNav";
 
 const firaMono = Fira_Mono({
   variable: "--font-fira-mono",
   weight: ["400", "500", "700"],
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -27,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${firaMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${firaMono.variable} ${inter.variable} h-full antialiased`}>
       <body className="flex h-dvh flex-col overflow-hidden bg-stone-50 text-stone-900">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
           <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>

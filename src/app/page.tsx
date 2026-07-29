@@ -1,7 +1,6 @@
 import { getHomeData, getCurrentUserName } from "@/lib/data";
-import { buildNetWorthSeries } from "@/lib/networth";
+import { buildNetWorthSeries, netWorthAsOf, hasHistoryAtOrBefore } from "@/lib/networth";
 import NetWorthCard from "@/components/NetWorthCard";
-import NetWorthGoalCard from "@/components/NetWorthGoalCard";
 import MonthGlanceCard from "@/components/MonthGlanceCard";
 import CardDueReminder from "@/components/CardDueReminder";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
@@ -24,6 +23,11 @@ export default async function Home() {
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
   const series = buildNetWorthSeries(history, 6, accountClosures);
 
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const change30d = hasHistoryAtOrBefore(history, thirtyDaysAgo)
+    ? netWorth - netWorthAsOf(history, thirtyDaysAgo, accountClosures)
+    : null;
+
   const cardMonthSpend = new Map<string, number>();
   for (const t of monthTransactions) {
     if (!t.card_id) continue;
@@ -40,8 +44,7 @@ export default async function Home() {
       </h1>
       <DateTimeClock />
 
-      <NetWorthCard netWorth={netWorth} series={series} />
-      <NetWorthGoalCard goal={netWorthGoal} netWorth={netWorth} />
+      <NetWorthCard netWorth={netWorth} series={series} change30d={change30d} goal={netWorthGoal} />
       <CardDueReminder cards={cards} accounts={accounts} cardOutstanding={cardOutstanding} />
       <MonthGlanceCard
         transactions={monthTransactions}
