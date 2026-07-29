@@ -300,12 +300,13 @@ export function FixedRow({
 
       {detailOpen && (
         <div
-          className="border-t border-stone-100 px-4 py-3"
+          className="px-4 py-3"
           onClick={(e) => e.stopPropagation()}
         >
           {paidWith && (
             <p className="text-xs text-stone-400">
-              Paid with <span className="text-stone-600">{paidWith}</span>
+              {transaction.type === "income" ? "Added to" : "Paid with"}{" "}
+              <span className="text-stone-600">{paidWith}</span>
             </p>
           )}
           {lineItems.length > 0 && (

@@ -25,7 +25,7 @@ export default function NetWorthCard({
   goal: Goal | null;
 }) {
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-white to-sky-100 p-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
+    <div className="rounded-3xl bg-gradient-to-br from-orange-50 to-violet-50 p-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
       <p className="text-sm text-stone-500">Net worth</p>
       <div className="mt-1 flex items-baseline gap-2">
         <p className="font-mono text-3xl font-semibold tracking-tight">${fmt(netWorth)}</p>

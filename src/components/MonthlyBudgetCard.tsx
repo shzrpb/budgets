@@ -33,7 +33,7 @@ export default function MonthlyBudgetCard({
   }
 
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-white to-sky-50 p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
+    <div className="rounded-3xl bg-gradient-to-br from-rose-50 to-sky-50 p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-stone-800">Monthly budget</p>
 

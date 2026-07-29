@@ -53,7 +53,6 @@ export default function FixedSheetForm({
   const itemsTotal = items.reduce((sum, i) => sum + i.amount, 0);
   const hasLineItems = items.length > 0;
   const canSave = Number(amount) > 0;
-  const showAccounts = type === "income" || paymentMethod === "cash";
 
   function handleAddItem() {
     const value = Number(newItemAmount);
@@ -119,8 +118,6 @@ export default function FixedSheetForm({
 
   function handleType(next: TransactionType) {
     setType(next);
-    if (next === "income") setAccountId((id) => id ?? accounts[0]?.id ?? null);
-    else if (paymentMethod === "credit") setAccountId(null);
   }
 
   function handleSave() {
@@ -130,9 +127,9 @@ export default function FixedSheetForm({
         amount: Number(amount),
         type,
         categoryId: type === "spend" ? categoryId : null,
-        accountId: showAccounts ? accountId : null,
-        paymentMethod: type === "spend" ? paymentMethod : null,
-        cardId: type === "spend" && paymentMethod === "credit" ? cardId : null,
+        accountId: paymentMethod === "cash" ? accountId : null,
+        paymentMethod,
+        cardId: paymentMethod === "credit" ? cardId : null,
         occurredAt: startDate,
         recurrence,
       };
@@ -152,14 +149,14 @@ export default function FixedSheetForm({
   const selectedCategory = fixedCategories.find((c) => c.id === categoryId);
   const selectedCard = cards.find((c) => c.id === cardId);
   const selectedAccount = accounts.find((a) => a.id === accountId);
-  const accountOrCardLabel = type === "spend" && paymentMethod === "credit" ? "Card" : "Account";
+  const accountOrCardLabel = paymentMethod === "credit" ? "Card" : "Account";
   const accountOrCardValue =
-    type === "spend" && paymentMethod === "credit" ? selectedCard?.name ?? "Select" : selectedAccount?.name ?? "Select";
+    paymentMethod === "credit" ? selectedCard?.name ?? "Select" : selectedAccount?.name ?? "Select";
   const accountOrCardOptions: SelectOption[] =
-    type === "spend" && paymentMethod === "credit"
+    paymentMethod === "credit"
       ? cards.map((c) => ({ id: c.id, name: c.name }))
       : accounts.map((a) => ({ id: a.id, name: a.name }));
-  const accountOrCardSelectedId = type === "spend" && paymentMethod === "credit" ? cardId : accountId;
+  const accountOrCardSelectedId = paymentMethod === "credit" ? cardId : accountId;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30">
@@ -263,28 +260,28 @@ export default function FixedSheetForm({
           </div>
         </div>
 
-        {type === "spend" && (
-          <div className="mt-1 flex items-center justify-between">
-            <p className="text-xs font-medium text-stone-400">Paid with</p>
-            <div className="flex rounded-full bg-stone-100 p-1">
-              {(["cash", "credit"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => handlePaymentMethod(m)}
-                  className={`rounded-full px-4 py-1 text-sm font-medium capitalize transition-colors ${
-                    paymentMethod === m ? "bg-white shadow-sm text-stone-900" : "text-stone-500"
-                  }`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
+        <div className="mt-5 flex items-center justify-between">
+          <p className="text-xs font-medium text-stone-400">
+            {type === "spend" ? "Paid with" : "Added to"}
+          </p>
+          <div className="flex rounded-full bg-stone-100 p-1">
+            {(["cash", "credit"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => handlePaymentMethod(m)}
+                className={`rounded-full px-4 py-1 text-sm font-medium capitalize transition-colors ${
+                  paymentMethod === m ? "bg-white shadow-sm text-stone-900" : "text-stone-500"
+                }`}
+              >
+                {m}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
 
-        {((type === "spend" && paymentMethod === "credit" && cards.length > 0) ||
-          (showAccounts && accounts.length > 0)) && (
+        {((paymentMethod === "credit" && cards.length > 0) ||
+          (paymentMethod === "cash" && accounts.length > 0)) && (
           <SelectRow
             label={accountOrCardLabel}
             value={accountOrCardValue}

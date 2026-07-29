@@ -9,7 +9,14 @@ import TrendChart from "@/components/TrendChart";
 import type { TrendPoint } from "@/lib/networth";
 import type { Account } from "@/lib/types";
 
-const TINTS = ["to-violet-50", "to-rose-50", "to-amber-50", "to-sky-50", "to-emerald-50"];
+/** Peach-lavender, blue-mint, yellow-green, pink-sky, lilac-peach. */
+const TINTS = [
+  "from-orange-50 to-violet-50",
+  "from-sky-50 to-teal-50",
+  "from-amber-50 to-green-50",
+  "from-rose-50 to-sky-50",
+  "from-violet-50 to-orange-50",
+];
 
 export default function AccountCard({
   account,
@@ -49,7 +56,7 @@ export default function AccountCard({
         })}
       >
         <div
-          className={`rounded-3xl bg-gradient-to-br from-white ${TINTS[index % TINTS.length]} p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60`}
+          className={`rounded-3xl bg-gradient-to-br ${TINTS[index % TINTS.length]} p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60`}
         >
           <div className="flex items-center justify-between">
             <div>
