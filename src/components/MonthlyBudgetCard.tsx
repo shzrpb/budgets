@@ -71,7 +71,7 @@ export default function MonthlyBudgetCard({
           style={{ width: `${progress * 100}%` }}
         />
       </div>
-      <p className="mt-1.5 text-xs text-stone-400">
+      <p className="mt-1.5 text-right text-xs text-stone-400">
         <span className="font-mono">${fmtAbs(remaining)}</span> {remaining >= 0 ? "left" : "over"}
       </p>
     </div>

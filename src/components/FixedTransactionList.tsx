@@ -26,17 +26,20 @@ export default function FixedTransactionList({
   accounts,
   cards,
   lineItems = [],
+  showDetail = false,
+  onRowClick,
 }: {
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];
   cards: Card[];
   lineItems?: LineItem[];
+  showDetail?: boolean;
+  onRowClick?: () => void;
 }) {
   const [order, setOrder] = useState(transactions);
   const [syncedKey, setSyncedKey] = useState(() => keyOf(transactions));
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [detailId, setDetailId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dragIndexRef = useRef<number | null>(null);
@@ -180,8 +183,8 @@ export default function FixedTransactionList({
                 account={t.account_id ? accountById.get(t.account_id) : undefined}
                 card={t.card_id ? cardById.get(t.card_id) : undefined}
                 lineItems={lineItemsByTransaction.get(t.id) ?? []}
-                detailOpen={detailId === t.id}
-                onToggleDetail={() => setDetailId((id) => (id === t.id ? null : t.id))}
+                detailOpen={showDetail}
+                onToggleDetail={onRowClick}
                 onHandlePointerDown={(e) => handleHandlePointerDown(e, index, t.id)}
                 onHandlePointerMove={handleHandlePointerMove}
                 onHandlePointerUp={handleHandlePointerUp}

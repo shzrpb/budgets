@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import AddMoreButton from "@/components/AddMoreButton";
 import FixedSheet from "@/components/FixedSheet";
-import FixedTransactionList, { FixedRow } from "@/components/FixedTransactionList";
-import { MinusIcon, PlusIcon } from "@/components/icons";
+import FixedTransactionList from "@/components/FixedTransactionList";
+import { PlusIcon } from "@/components/icons";
 import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types";
 
 /** How much of each covered card peeks out in the collapsed stack. */
-const PEEK_HEIGHT = 40;
-const ROW_HEIGHT = 60;
+const PEEK_HEIGHT = 28;
+const ROW_HEIGHT = 52;
 const MAX_STACKED = 4;
 
 /**
@@ -43,10 +42,6 @@ export default function FixedTransactionsSection({
   const stacked = transactions.slice(0, MAX_STACKED);
   const hidden = transactions.length - stacked.length;
 
-  const categoryById = new Map(categories.map((c) => [c.id, c]));
-  const accountById = new Map(accounts.map((a) => [a.id, a]));
-  const cardById = new Map(cards.map((c) => [c.id, c]));
-
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
@@ -60,18 +55,11 @@ export default function FixedTransactionsSection({
         </div>
         <button
           type="button"
-          onClick={() => (transactions.length === 0 ? setAdding(true) : setExpanded((v) => !v))}
-          aria-label={
-            transactions.length === 0
-              ? "Add a fixed transaction"
-              : expanded
-                ? "Collapse fixed transactions"
-                : "Expand fixed transactions"
-          }
-          aria-expanded={transactions.length > 0 ? expanded : undefined}
+          onClick={() => setAdding(true)}
+          aria-label="Add a fixed transaction"
           className="-mr-2 flex h-9 w-9 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-100"
         >
-          {expanded ? <MinusIcon /> : <PlusIcon />}
+          <PlusIcon />
         </button>
       </div>
 
@@ -80,52 +68,39 @@ export default function FixedTransactionsSection({
           Nothing fixed yet — rent, salary, subscriptions.
         </p>
       ) : expanded ? (
-        <>
-          <FixedTransactionList
-            transactions={transactions}
-            categories={categories}
-            accounts={accounts}
-            cards={cards}
-            lineItems={lineItems}
-          />
-          <AddMoreButton onClick={() => setAdding(true)} />
-        </>
+        <FixedTransactionList
+          transactions={transactions}
+          categories={categories}
+          accounts={accounts}
+          cards={cards}
+          lineItems={lineItems}
+          showDetail
+          onRowClick={() => setExpanded(false)}
+        />
       ) : (
         <button
           type="button"
           onClick={() => setExpanded(true)}
           aria-label={`Expand ${transactions.length} fixed transactions`}
+          aria-expanded={false}
           className="relative block w-full text-left"
           style={{ height: (stacked.length - 1) * PEEK_HEIGHT + ROW_HEIGHT }}
         >
-          {stacked.map((t, i) => {
-            // Covered cards fade out where the next card overlaps them, so the
-            // stack reads as depth rather than as text chopped in half.
-            const covered = i < stacked.length - 1;
-            return (
+          {stacked.map((t, i) => (
             <div
               key={t.id}
-              className="absolute inset-x-0"
-              style={{
-                top: i * PEEK_HEIGHT,
-                zIndex: i,
-                ...(covered
-                  ? {
-                      maskImage: `linear-gradient(to bottom, #000 ${PEEK_HEIGHT - 16}px, transparent ${PEEK_HEIGHT}px)`,
-                      WebkitMaskImage: `linear-gradient(to bottom, #000 ${PEEK_HEIGHT - 16}px, transparent ${PEEK_HEIGHT}px)`,
-                    }
-                  : {}),
-              }}
+              className="absolute inset-x-0 rounded-2xl bg-white px-4 pt-2.5 shadow-sm"
+              style={{ top: i * PEEK_HEIGHT, zIndex: i, height: ROW_HEIGHT }}
             >
-              <FixedRow
-                transaction={t}
-                category={t.category_id ? categoryById.get(t.category_id) : undefined}
-                account={t.account_id ? accountById.get(t.account_id) : undefined}
-                card={t.card_id ? cardById.get(t.card_id) : undefined}
-              />
+              <p
+                className={`text-right text-sm font-semibold ${
+                  t.type === "income" ? "text-emerald-600" : "text-stone-900"
+                }`}
+              >
+                {t.type === "income" ? "+" : "-"}${t.amount.toLocaleString()}
+              </p>
             </div>
-            );
-          })}
+          ))}
           {hidden > 0 && (
             <span
               className="absolute bottom-2 right-4 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500"
