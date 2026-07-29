@@ -126,10 +126,16 @@ export default function FixedTransactionsSection({
           {transactions.map((t, i) => {
             const category = t.category_id ? categoryById.get(t.category_id) : undefined;
             const dotColor = t.type === "income" ? "#10b981" : category?.color ?? "#a8a29e";
+            // Every row but the last is partly covered by the one after it —
+            // only its top PEEK_HEIGHT slice is ever visible — so its content
+            // is centered in that slice instead of the full (mostly hidden) row.
+            const isLast = i === transactions.length - 1;
             return (
               <div
                 key={t.id}
-                className="absolute inset-x-0 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3.5 shadow-sm"
+                className={`absolute inset-x-0 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 shadow-sm ${
+                  isLast ? "py-3.5" : "pt-2 pb-6"
+                }`}
                 style={{ top: i * PEEK_HEIGHT, zIndex: i, height: ROW_HEIGHT }}
               >
                 <div className="flex min-w-0 items-center gap-2">

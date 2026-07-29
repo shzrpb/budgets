@@ -5,7 +5,8 @@ import { addCard, updateCard } from "@/app/actions";
 import AddMoreButton from "@/components/AddMoreButton";
 import type { Card } from "@/lib/types";
 
-const COLORS = ["#57534e", "#0ea5e9", "#22c55e", "#a855f7", "#f97316", "#ec4899"];
+/** Cards no longer expose a color picker; every card gets this neutral tint. */
+const DEFAULT_COLOR = "#57534e";
 
 export default function AddCardSheet() {
   const [open, setOpen] = useState(false);
@@ -27,7 +28,6 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
   const [name, setName] = useState(card?.name ?? "");
   const [maxSpend, setMaxSpend] = useState(card?.max_spend?.toString() ?? "");
   const [note, setNote] = useState(card?.note ?? "");
-  const [color, setColor] = useState(card?.color ?? COLORS[0]);
   const [billDueDay, setBillDueDay] = useState(card?.bill_due_day?.toString() ?? "");
   const [isPending, startTransition] = useTransition();
 
@@ -38,7 +38,7 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
     startTransition(async () => {
       const input = {
         name: name.trim(),
-        color,
+        color: card?.color ?? DEFAULT_COLOR,
         maxSpend: maxSpend === "" ? null : Number(maxSpend),
         note: note.trim() || null,
         billDueDay: billDueDay === "" ? null : Math.min(31, Math.max(1, Number(billDueDay))),
@@ -69,23 +69,6 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
           placeholder="e.g. Amex KrisFlyer"
           className="mt-4 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
         />
-
-        <p className="mt-4 text-xs font-medium text-stone-400">Color</p>
-        <div className="mt-2 flex gap-2">
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setColor(c)}
-              className="h-7 w-7 rounded-full ring-2 ring-offset-2 transition-all"
-              style={{
-                backgroundColor: c,
-                outlineColor: c,
-                ["--tw-ring-color" as string]: color === c ? c : "transparent",
-              }}
-            />
-          ))}
-        </div>
 
         <p className="mt-4 text-xs font-medium text-stone-400">
           Monthly spend limit <span className="text-stone-300">(optional)</span>

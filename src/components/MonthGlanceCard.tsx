@@ -62,21 +62,28 @@ export default function MonthGlanceCard({
   useRegisterSheetOpen(showAll);
 
   // The homepage is a fixed, non-scrolling page — however much room is left
-  // under the alerts/progress bar is however much room the chips get. More
-  // alerts above means less space here, and vice versa.
+  // below the chips (down to the nav bar) is however many rows we can show.
+  // Measured from the chip area's own top position rather than its rendered
+  // height, so the card can still shrink to fit only as many rows as it
+  // actually needs instead of stretching to fill the whole remaining space.
   const chipAreaRef = useRef<HTMLDivElement>(null);
   const [maxRows, setMaxRows] = useState(3);
 
   useEffect(() => {
     const el = chipAreaRef.current;
     if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const height = entries[0]?.contentRect.height ?? 0;
-      const rows = Math.max(1, Math.floor((height + ROW_GAP) / (CHIP_ROW_HEIGHT + ROW_GAP)));
+
+    function recompute() {
+      const RESERVED_BOTTOM = 110; // nav bar + FAB clearance + safe area, approx
+      const top = el!.getBoundingClientRect().top;
+      const available = window.innerHeight - top - RESERVED_BOTTOM;
+      const rows = Math.max(1, Math.floor((available + ROW_GAP) / (CHIP_ROW_HEIGHT + ROW_GAP)));
       setMaxRows(rows);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
+    }
+
+    recompute();
+    window.addEventListener("resize", recompute);
+    return () => window.removeEventListener("resize", recompute);
   }, []);
 
   const spent = transactions.reduce((sum, t) => sum + t.amount, 0);
@@ -107,7 +114,7 @@ export default function MonthGlanceCard({
   const hiddenCount = categoryTotals.length - visible.length;
 
   return (
-    <div className="flex min-h-64 flex-1 flex-col rounded-3xl bg-gradient-to-br from-amber-50 to-green-50 p-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
+    <div className="flex flex-col rounded-3xl bg-gradient-to-br from-amber-50 to-green-50 p-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-stone-700">
           {MONTH_LABEL.format(now)} at a glance
@@ -135,7 +142,7 @@ export default function MonthGlanceCard({
       )}
 
       {categoryTotals.length > 0 && (
-        <div ref={chipAreaRef} className="mt-4 min-h-0 flex-1 overflow-hidden">
+        <div ref={chipAreaRef} className="mt-4">
           <div className="flex flex-wrap gap-2">
             {visible.map(({ category, amount }) => (
               <CategoryPill key={category.id} name={category.name} amount={amount} />
