@@ -14,6 +14,7 @@ export default async function Home() {
     history,
     categories,
     cards,
+    cardOutstanding,
     netWorthGoal,
     monthTransactions,
     settings,
@@ -41,7 +42,7 @@ export default async function Home() {
 
       <NetWorthCard netWorth={netWorth} series={series} />
       <NetWorthGoalCard goal={netWorthGoal} netWorth={netWorth} />
-      <CardDueReminder cards={cards} />
+      <CardDueReminder cards={cards} accounts={accounts} cardOutstanding={cardOutstanding} />
       <MonthGlanceCard
         transactions={monthTransactions}
         categories={categories}

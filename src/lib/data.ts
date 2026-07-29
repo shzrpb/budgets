@@ -123,6 +123,7 @@ export interface HomeData {
   history: AccountBalanceHistoryRow[];
   categories: Category[];
   cards: Card[];
+  cardOutstanding: Record<string, number>;
   netWorthGoal: Goal | null;
   monthTransactions: Transaction[];
   settings: Settings | null;
@@ -133,12 +134,18 @@ export async function getHomeData(months = 6): Promise<HomeData> {
   const { data, error } = await supabase.rpc("get_home_data", { months });
   if (error) throw new Error(error.message);
 
+  const cardOutstanding: Record<string, number> = {};
+  for (const row of (data?.card_outstanding as { card_id: string; outstanding: number }[]) ?? []) {
+    cardOutstanding[row.card_id] = row.outstanding;
+  }
+
   return {
     accounts: (data?.accounts as Account[]) ?? [],
     accountClosures: (data?.account_closures as AccountClosure[]) ?? [],
     history: (data?.balance_history as AccountBalanceHistoryRow[]) ?? [],
     categories: (data?.categories as Category[]) ?? [],
     cards: (data?.cards as Card[]) ?? [],
+    cardOutstanding,
     netWorthGoal: (data?.net_worth_goal as Goal | null) ?? null,
     monthTransactions: (data?.month_transactions as Transaction[]) ?? [],
     settings: (data?.settings as Settings | null) ?? null,

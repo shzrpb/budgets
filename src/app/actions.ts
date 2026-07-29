@@ -437,6 +437,69 @@ export async function deleteCard(cardId: string) {
   revalidateCards();
 }
 
+/**
+ * Settles a card's outstanding credit spend by debiting a cash account —
+ * credit purchases don't touch net worth until this runs. Outstanding is
+ * recomputed here (not trusted from the client) as everything logged since
+ * the card's last payment; matching the same-day rule the get_home_data
+ * outstanding figure uses.
+ */
+export async function payCardBill(cardId: string, accountId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const { data: card, error: cardError } = await supabase
+    .from("cards")
+    .select("name, last_paid_at")
+    .eq("id", cardId)
+    .single();
+  if (cardError) throw new Error(cardError.message);
+
+  const { data: cardTransactions, error: txError } = await supabase
+    .from("transactions")
+    .select("amount, occurred_at")
+    .eq("card_id", cardId)
+    .eq("payment_method", "credit")
+    .eq("type", "spend");
+  if (txError) throw new Error(txError.message);
+
+  const outstanding = (cardTransactions ?? [])
+    .filter((t) => !card.last_paid_at || t.occurred_at > card.last_paid_at)
+    .reduce((sum, t) => sum + t.amount, 0);
+  if (outstanding <= 0) return;
+
+  const paidAt = new Date().toISOString();
+
+  const { error: insertError } = await supabase.from("transactions").insert({
+    user_id: user.id,
+    amount: outstanding,
+    type: "spend",
+    category_id: null,
+    account_id: accountId,
+    payment_method: "cash",
+    card_id: null,
+    note: `${card.name} bill payment`,
+    occurred_at: paidAt.slice(0, 10),
+  });
+  if (insertError) throw new Error(insertError.message);
+
+  await adjustAccountBalance(supabase, user.id, accountId, -outstanding);
+
+  const { error: updateError } = await supabase
+    .from("cards")
+    .update({ last_paid_at: paidAt })
+    .eq("id", cardId);
+  if (updateError) throw new Error(updateError.message);
+
+  revalidatePath("/");
+  revalidatePath("/transactions");
+  revalidatePath("/accounts");
+  revalidatePath("/cards");
+}
+
 function revalidateCards() {
   revalidatePath("/");
   revalidatePath("/cards");

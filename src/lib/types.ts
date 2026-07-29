@@ -60,6 +60,8 @@ export interface Card {
   note: string | null;
   /** Day of month (1-31) the bill is due; recalculated every month. */
   bill_due_day: number | null;
+  /** Set when the bill was last paid off; outstanding balance resets from here. */
+  last_paid_at: string | null;
   created_at: string;
 }
 
