@@ -1,5 +1,6 @@
 import { getCards, getMonthTransactions } from "@/lib/data";
 import CardsView from "@/components/CardsView";
+import PageHeader from "@/components/PageHeader";
 
 export default async function CardsPage() {
   const [cards, monthTransactions] = await Promise.all([getCards(), getMonthTransactions()]);
@@ -14,6 +15,8 @@ export default async function CardsPage() {
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-6">
+      <PageHeader title="Cards" />
+
       <p className="text-sm text-stone-500">
         Total spent: <span className="font-medium text-stone-800">${totalSpent.toLocaleString()}</span>
       </p>

@@ -9,7 +9,7 @@ export default function NetWorthCard({
   series: TrendPoint[];
 }) {
   return (
-    <div className="rounded-3xl bg-white p-4 shadow-sm">
+    <div className="rounded-3xl bg-gradient-to-br from-white to-sky-50 p-4 shadow-sm">
       <p className="text-sm text-stone-500">Net worth</p>
       <p className="mt-1 text-3xl font-semibold tracking-tight">
         ${netWorth.toLocaleString(undefined, { maximumFractionDigits: 0 })}

@@ -19,7 +19,7 @@ export default function MonthlyBudgetCard({ monthlyBudget }: { monthlyBudget: nu
   }
 
   return (
-    <div className="flex items-center justify-between rounded-3xl bg-white p-5 shadow-sm">
+    <div className="flex items-center justify-between rounded-3xl bg-gradient-to-br from-white to-sky-50 p-5 shadow-sm">
       <p className="text-sm font-medium text-stone-800">Monthly budget</p>
 
       {editing ? (

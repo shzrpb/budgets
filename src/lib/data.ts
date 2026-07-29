@@ -10,6 +10,22 @@ import type {
   Transaction,
 } from "@/lib/types";
 
+/** Falls back to a title-cased guess from the email local-part since sign-in never collects a name. */
+export async function getCurrentUserName(): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const fullName = user?.user_metadata?.full_name as string | undefined;
+  if (fullName) return fullName.split(" ")[0];
+
+  const email = user?.email ?? "";
+  const localPart = email.split("@")[0].replace(/[^a-zA-Z]+$/, "");
+  if (!localPart) return "there";
+  return localPart.charAt(0).toUpperCase() + localPart.slice(1).toLowerCase();
+}
+
 export async function getAccounts(): Promise<Account[]> {
   const supabase = await createClient();
   const { data } = await supabase

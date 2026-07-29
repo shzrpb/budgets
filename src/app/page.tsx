@@ -1,4 +1,4 @@
-import { getHomeData } from "@/lib/data";
+import { getHomeData, getCurrentUserName } from "@/lib/data";
 import { buildNetWorthSeries } from "@/lib/networth";
 import NetWorthCard from "@/components/NetWorthCard";
 import NetWorthGoalCard from "@/components/NetWorthGoalCard";
@@ -18,6 +18,7 @@ export default async function Home() {
     monthTransactions,
     settings,
   } = await getHomeData();
+  const userName = await getCurrentUserName();
 
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
   const series = buildNetWorthSeries(history, 6, accountClosures);
@@ -33,6 +34,9 @@ export default async function Home() {
 
   return (
     <div className="flex h-full flex-col gap-2.5 overflow-hidden px-4 pt-4 pb-24">
+      <h1 className="pl-2 text-2xl font-semibold tracking-tight text-stone-900">
+        Hello, {userName}
+      </h1>
       <DateTimeClock />
 
       <NetWorthCard netWorth={netWorth} series={series} />

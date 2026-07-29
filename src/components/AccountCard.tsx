@@ -9,14 +9,18 @@ import TrendChart from "@/components/TrendChart";
 import type { TrendPoint } from "@/lib/networth";
 import type { Account } from "@/lib/types";
 
+const TINTS = ["to-violet-50", "to-rose-50", "to-amber-50", "to-sky-50", "to-emerald-50"];
+
 export default function AccountCard({
   account,
   series,
   lastThreeMonths,
+  index = 0,
 }: {
   account: Account;
   series: TrendPoint[];
   lastThreeMonths: { label: string; value: number }[];
+  index?: number;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -44,7 +48,7 @@ export default function AccountCard({
           deleteLabel: "Delete account",
         })}
       >
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
+        <div className={`rounded-3xl bg-gradient-to-br from-white ${TINTS[index % TINTS.length]} p-5 shadow-sm`}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-stone-800">{account.name}</p>

@@ -12,12 +12,16 @@ function ordinal(day: number): string {
   return `${day}${suffix}`;
 }
 
+const TINTS = ["to-rose-50", "to-sky-50", "to-amber-50", "to-violet-50", "to-emerald-50"];
+
 export default function CardItem({
   card,
   monthSpend,
+  index = 0,
 }: {
   card: Card;
   monthSpend: number;
+  index?: number;
 }) {
   const [editing, setEditing] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -47,7 +51,7 @@ export default function CardItem({
           deleteLabel: "Delete card",
         })}
       >
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
+        <div className={`rounded-3xl bg-gradient-to-br from-white ${TINTS[index % TINTS.length]} p-5 shadow-sm`}>
           <div className="flex items-center gap-3">
             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: card.color }} />
             <p className="text-sm font-medium text-stone-800">{card.name}</p>

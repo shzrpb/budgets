@@ -13,7 +13,11 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(ellipse 100% 40% at 50% 0%, #eaf6ee 0%, transparent 60%),
+    radial-gradient(ellipse 90% 35% at 100% 15%, #fdf2e9 0%, transparent 55%),
+    var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
 }
 

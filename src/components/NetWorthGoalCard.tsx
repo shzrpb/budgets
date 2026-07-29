@@ -8,7 +8,7 @@ export default function NetWorthGoalCard({ goal, netWorth }: { goal: Goal | null
         goal={null}
         title="Set your net worth goal"
         trigger={
-          <div className="rounded-3xl bg-white p-4 text-sm text-stone-500 shadow-sm">
+          <div className="rounded-3xl bg-gradient-to-br from-white to-emerald-50 p-4 text-sm text-stone-500 shadow-sm">
             No overall net worth goal yet.{" "}
             <span className="font-medium text-stone-800">Tap to set one →</span>
           </div>
@@ -31,7 +31,7 @@ export default function NetWorthGoalCard({ goal, netWorth }: { goal: Goal | null
       goal={goal}
       title="Edit net worth goal"
       trigger={
-        <div className="rounded-3xl bg-white p-4 shadow-sm">
+        <div className="rounded-3xl bg-gradient-to-br from-white to-emerald-50 p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <p className="text-sm text-stone-500">Net worth goal</p>
             {dateLabel && <p className="text-xs text-stone-400">by {dateLabel}</p>}

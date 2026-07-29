@@ -1,6 +1,7 @@
 import { getAccounts, getCards, getCategories, getRecentTransactions, getSettings } from "@/lib/data";
 import TransactionList from "@/components/TransactionList";
 import MonthlyBudgetCard from "@/components/MonthlyBudgetCard";
+import PageHeader from "@/components/PageHeader";
 
 export default async function TransactionsPage() {
   const [transactions, categories, accounts, cards, settings] = await Promise.all([
@@ -13,6 +14,8 @@ export default async function TransactionsPage() {
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-6">
+      <PageHeader title="Transactions" />
+
       <MonthlyBudgetCard monthlyBudget={settings?.monthly_budget ?? 0} />
 
       <TransactionList transactions={transactions} categories={categories} accounts={accounts} cards={cards} />
