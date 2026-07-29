@@ -1,22 +1,25 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { addTransaction, updateTransaction } from "@/app/actions";
+import { addLineItem, addTransaction, deleteLineItem, updateLineItem, updateTransaction } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
 import AddCategorySheet, { EditCategorySheet } from "@/components/AddCategorySheet";
-import type { Account, Card, Category, PaymentMethod, Recurrence, Transaction, TransactionType } from "@/lib/types";
+import { TrashIcon } from "@/components/icons";
+import type { Account, Card, Category, LineItem, PaymentMethod, Recurrence, Transaction, TransactionType } from "@/lib/types";
 
 export default function FixedSheetForm({
   transaction,
   categories,
   accounts,
   cards,
+  lineItems = [],
   onClose,
 }: {
   transaction?: Transaction;
   categories: Category[];
   accounts: Account[];
   cards: Card[];
+  lineItems?: LineItem[];
   onClose: () => void;
 }) {
   const isEdit = !!transaction;
@@ -40,9 +43,65 @@ export default function FixedSheetForm({
   const [isPending, startTransition] = useTransition();
   const [addingCategory, setAddingCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [items, setItems] = useState(lineItems);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemAmount, setNewItemAmount] = useState("");
+  const [, startLineItemTransition] = useTransition();
 
+  const itemsTotal = items.reduce((sum, i) => sum + i.amount, 0);
+  const hasLineItems = items.length > 0;
   const canSave = Number(amount) > 0;
   const showAccounts = type === "income" || paymentMethod === "cash";
+
+  function handleAddItem() {
+    const value = Number(newItemAmount);
+    if (!newItemName.trim() || !(value > 0) || !transaction) return;
+    const tempId = `pending-${Date.now()}`;
+    setItems((prev) => [
+      ...prev,
+      {
+        id: tempId,
+        user_id: transaction.user_id,
+        transaction_id: transaction.id,
+        name: newItemName.trim(),
+        amount: value,
+        sort_order: prev.length,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+    setAmount((itemsTotal + value).toString());
+    const name = newItemName.trim();
+    setNewItemName("");
+    setNewItemAmount("");
+    startLineItemTransition(async () => {
+      const inserted = await addLineItem(transaction.id, { name, amount: value });
+      setItems((prev) => prev.map((i) => (i.id === tempId ? (inserted as LineItem) : i)));
+    });
+  }
+
+  /** Local edit only, so typing doesn't fire a request per keystroke. */
+  function editItemLocal(id: string, name: string, itemAmount: number) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, name, amount: itemAmount } : i)));
+  }
+
+  /** Persists the field on blur, once the value has settled. */
+  function commitItem(id: string) {
+    const item = items.find((i) => i.id === id);
+    if (!item || !(item.amount > 0) || !item.name.trim() || item.id.startsWith("pending-")) return;
+    setAmount(items.reduce((sum, i) => sum + i.amount, 0).toString());
+    startLineItemTransition(() => updateLineItem(id, { name: item.name.trim(), amount: item.amount }));
+  }
+
+  function handleDeleteItem(id: string) {
+    const remaining = items.filter((i) => i.id !== id);
+    setItems(remaining);
+    // Once the last item is gone the amount reverts to being manually
+    // editable again — the server leaves the last synced total in place.
+    if (remaining.length > 0) {
+      setAmount(remaining.reduce((sum, i) => sum + i.amount, 0).toString());
+    }
+    startLineItemTransition(() => deleteLineItem(id));
+  }
 
   function handlePaymentMethod(method: PaymentMethod) {
     setPaymentMethod(method);
@@ -119,11 +178,77 @@ export default function FixedSheetForm({
           <input
             inputMode="decimal"
             placeholder="0.00"
-            value={amount}
+            value={hasLineItems ? itemsTotal.toString() : amount}
+            disabled={hasLineItems}
             onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
-            className="w-40 bg-transparent text-center text-4xl font-semibold tracking-tight outline-none"
+            className="w-40 bg-transparent text-center text-4xl font-semibold tracking-tight outline-none disabled:text-stone-400"
           />
         </div>
+        {hasLineItems && (
+          <p className="mt-1 text-center text-xs text-stone-400">Sum of line items below</p>
+        )}
+
+        {isEdit && (
+          <>
+            <p className="mt-5 text-xs font-medium text-stone-400">Line items</p>
+            <div className="mt-2 flex flex-col gap-2">
+              {items.map((item) => (
+                <div key={item.id} className="flex items-center gap-2">
+                  <input
+                    value={item.name}
+                    onChange={(e) => editItemLocal(item.id, e.target.value, item.amount)}
+                    onBlur={() => commitItem(item.id)}
+                    placeholder="Name"
+                    className="min-w-0 flex-1 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm outline-none focus:border-stone-400"
+                  />
+                  <input
+                    inputMode="decimal"
+                    value={item.amount || ""}
+                    onChange={(e) =>
+                      editItemLocal(item.id, item.name, Number(e.target.value.replace(/[^0-9.]/g, "")))
+                    }
+                    onBlur={() => commitItem(item.id)}
+                    placeholder="0.00"
+                    className="w-20 rounded-xl border border-stone-200 bg-stone-50 px-2 py-2 text-right text-sm outline-none focus:border-stone-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteItem(item.id)}
+                    aria-label={`Remove ${item.name || "line item"}`}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-stone-400 hover:bg-red-50 hover:text-red-500"
+                  >
+                    <TrashIcon size={14} />
+                  </button>
+                </div>
+              ))}
+
+              <div className="flex items-center gap-2">
+                <input
+                  value={newItemName}
+                  onChange={(e) => setNewItemName(e.target.value)}
+                  placeholder="e.g. Phone"
+                  className="min-w-0 flex-1 rounded-xl border border-dashed border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-stone-400"
+                />
+                <input
+                  inputMode="decimal"
+                  value={newItemAmount}
+                  onChange={(e) => setNewItemAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                  placeholder="0.00"
+                  className="w-20 rounded-xl border border-dashed border-stone-300 bg-white px-2 py-2 text-right text-sm outline-none focus:border-stone-400"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddItem}
+                  disabled={!newItemName.trim() || !(Number(newItemAmount) > 0)}
+                  aria-label="Add line item"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-500 disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {type === "spend" && (
           <>

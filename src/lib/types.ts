@@ -82,6 +82,16 @@ export interface Transaction {
   created_at: string;
 }
 
+export interface LineItem {
+  id: string;
+  user_id: string;
+  transaction_id: string;
+  name: string;
+  amount: number;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Goal {
   id: string;
   user_id: string;

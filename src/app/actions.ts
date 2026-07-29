@@ -206,6 +206,93 @@ export async function deleteTransaction(id: string) {
   revalidatePath("/accounts");
 }
 
+/** Keeps the parent transaction's amount equal to the sum of its line items. */
+async function syncLineItemTotal(supabase: SupabaseClient, transactionId: string) {
+  const { data: items, error } = await supabase
+    .from("transaction_line_items")
+    .select("amount")
+    .eq("transaction_id", transactionId);
+  if (error) throw new Error(error.message);
+  if (!items || items.length === 0) return;
+
+  const total = items.reduce((sum, i) => sum + i.amount, 0);
+  const { error: updateError } = await supabase
+    .from("transactions")
+    .update({ amount: total })
+    .eq("id", transactionId);
+  if (updateError) throw new Error(updateError.message);
+}
+
+export async function addLineItem(transactionId: string, input: { name: string; amount: number }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const { count } = await supabase
+    .from("transaction_line_items")
+    .select("id", { count: "exact", head: true })
+    .eq("transaction_id", transactionId);
+
+  const { data: inserted, error } = await supabase
+    .from("transaction_line_items")
+    .insert({
+      user_id: user.id,
+      transaction_id: transactionId,
+      name: input.name,
+      amount: input.amount,
+      sort_order: count ?? 0,
+    })
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+
+  await syncLineItemTotal(supabase, transactionId);
+
+  revalidatePath("/transactions");
+  return inserted;
+}
+
+export async function updateLineItem(id: string, input: { name: string; amount: number }) {
+  const supabase = await createClient();
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("transaction_line_items")
+    .select("transaction_id")
+    .eq("id", id)
+    .single();
+  if (fetchError) throw new Error(fetchError.message);
+
+  const { error } = await supabase
+    .from("transaction_line_items")
+    .update({ name: input.name, amount: input.amount })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+
+  await syncLineItemTotal(supabase, existing.transaction_id);
+
+  revalidatePath("/transactions");
+}
+
+export async function deleteLineItem(id: string) {
+  const supabase = await createClient();
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("transaction_line_items")
+    .select("transaction_id")
+    .eq("id", id)
+    .single();
+  if (fetchError) throw new Error(fetchError.message);
+
+  const { error } = await supabase.from("transaction_line_items").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  await syncLineItemTotal(supabase, existing.transaction_id);
+
+  revalidatePath("/transactions");
+}
+
 export async function addAccount(input: {
   name: string;
   type: string;

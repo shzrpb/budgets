@@ -6,7 +6,13 @@ import FixedSheet from "@/components/FixedSheet";
 import SwipeActions from "@/components/SwipeActions";
 import TransactionIcon from "@/components/TransactionIcon";
 import { editDeleteActions } from "@/components/rowActions";
-import type { Account, Card, Category, Transaction } from "@/lib/types";
+import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types";
+
+const CADENCE_STYLES: Record<string, string> = {
+  yearly: "bg-violet-100 text-violet-500",
+  monthly: "bg-stone-100 text-stone-500",
+  none: "bg-stone-100 text-stone-500",
+};
 
 const LONG_PRESS_MS = 300;
 
@@ -19,15 +25,18 @@ export default function FixedTransactionList({
   categories,
   accounts,
   cards,
+  lineItems = [],
 }: {
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];
   cards: Card[];
+  lineItems?: LineItem[];
 }) {
   const [order, setOrder] = useState(transactions);
   const [syncedKey, setSyncedKey] = useState(() => keyOf(transactions));
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dragIndexRef = useRef<number | null>(null);
@@ -47,6 +56,12 @@ export default function FixedTransactionList({
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const accountById = new Map(accounts.map((a) => [a.id, a]));
   const cardById = new Map(cards.map((c) => [c.id, c]));
+  const lineItemsByTransaction = new Map<string, LineItem[]>();
+  for (const item of lineItems) {
+    const list = lineItemsByTransaction.get(item.transaction_id) ?? [];
+    list.push(item);
+    lineItemsByTransaction.set(item.transaction_id, list);
+  }
   const editing = order.find((t) => t.id === editingId);
 
   function clearLongPress() {
@@ -164,6 +179,9 @@ export default function FixedTransactionList({
                 category={t.category_id ? categoryById.get(t.category_id) : undefined}
                 account={t.account_id ? accountById.get(t.account_id) : undefined}
                 card={t.card_id ? cardById.get(t.card_id) : undefined}
+                lineItems={lineItemsByTransaction.get(t.id) ?? []}
+                detailOpen={detailId === t.id}
+                onToggleDetail={() => setDetailId((id) => (id === t.id ? null : t.id))}
                 onHandlePointerDown={(e) => handleHandlePointerDown(e, index, t.id)}
                 onHandlePointerMove={handleHandlePointerMove}
                 onHandlePointerUp={handleHandlePointerUp}
@@ -180,6 +198,7 @@ export default function FixedTransactionList({
           categories={categories}
           accounts={accounts}
           cards={cards}
+          lineItems={lineItemsByTransaction.get(editing.id) ?? []}
           onClose={() => setEditingId(null)}
         />
       )}
@@ -192,6 +211,9 @@ export function FixedRow({
   category,
   account,
   card,
+  lineItems = [],
+  detailOpen = false,
+  onToggleDetail,
   onHandlePointerDown,
   onHandlePointerMove,
   onHandlePointerUp,
@@ -200,55 +222,65 @@ export function FixedRow({
   category?: Category;
   account?: Account;
   card?: Card;
+  lineItems?: LineItem[];
+  detailOpen?: boolean;
+  onToggleDetail?: () => void;
   onHandlePointerDown?: (e: React.PointerEvent) => void;
   onHandlePointerMove?: (e: React.PointerEvent) => void;
   onHandlePointerUp?: (e: React.PointerEvent) => void;
 }) {
   const tint = transaction.type === "income" ? "#7fc9b9" : category?.color ?? "#a8a29e";
+  const paidWith = [account?.name, card?.name ?? transaction.payment_method]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-          style={{ backgroundColor: `${tint}33`, color: tint }}
-        >
-          <TransactionIcon name={category?.name} isIncome={transaction.type === "income"} />
-        </span>
-        <div>
+    <div
+      className="rounded-2xl bg-white shadow-sm"
+      onClick={onToggleDetail}
+      role={onToggleDetail ? "button" : undefined}
+      aria-expanded={onToggleDetail ? detailOpen : undefined}
+    >
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: `${tint}33`, color: tint }}
+          >
+            <TransactionIcon name={category?.name} isIncome={transaction.type === "income"} />
+          </span>
           <p className="text-sm font-medium text-stone-800">
             {transaction.type === "income" ? "Income" : category?.name ?? "Uncategorized"}
-            <span className="ml-1.5 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500">
+            <span
+              className={`ml-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
+                CADENCE_STYLES[transaction.recurrence] ?? CADENCE_STYLES.none
+              }`}
+            >
               {transaction.recurrence}
             </span>
           </p>
-          <p className="text-xs text-stone-400">
-            {[account?.name, card?.name ?? transaction.payment_method].filter(Boolean).join(" · ") ||
-              (transaction.note ?? undefined)}
-          </p>
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <p
-          className={`text-sm font-semibold ${
-            transaction.type === "income" ? "text-emerald-600" : "text-stone-900"
-          }`}
-        >
-          {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
-        </p>
-        {onHandlePointerDown && (
-          <span
-            role="button"
-            aria-label="Drag to reorder"
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              onHandlePointerDown(e);
-            }}
-            onPointerMove={onHandlePointerMove}
-            onPointerUp={onHandlePointerUp}
-            onClick={(e) => e.stopPropagation()}
-            className="flex h-8 w-6 shrink-0 cursor-grab touch-none items-center justify-center text-stone-300 active:cursor-grabbing"
-            style={{ touchAction: "none" }}
+        <div className="flex items-center gap-2">
+          <p
+            className={`text-sm font-semibold ${
+              transaction.type === "income" ? "text-emerald-600" : "text-stone-900"
+            }`}
+          >
+            {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
+          </p>
+          {onHandlePointerDown && (
+            <span
+              role="button"
+              aria-label="Drag to reorder"
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                onHandlePointerDown(e);
+              }}
+              onPointerMove={onHandlePointerMove}
+              onPointerUp={onHandlePointerUp}
+              onClick={(e) => e.stopPropagation()}
+              className="flex h-8 w-6 shrink-0 cursor-grab touch-none items-center justify-center text-stone-300 active:cursor-grabbing"
+              style={{ touchAction: "none" }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="9" cy="6" r="1.5" />
@@ -258,9 +290,36 @@ export function FixedRow({
               <circle cx="9" cy="18" r="1.5" />
               <circle cx="15" cy="18" r="1.5" />
             </svg>
-          </span>
-        )}
+            </span>
+          )}
+        </div>
       </div>
+
+      {detailOpen && (
+        <div
+          className="border-t border-stone-100 px-4 py-3"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {paidWith && (
+            <p className="text-xs text-stone-400">
+              Paid with <span className="text-stone-600">{paidWith}</span>
+            </p>
+          )}
+          {lineItems.length > 0 && (
+            <div className={paidWith ? "mt-2 flex flex-col gap-1.5" : "flex flex-col gap-1.5"}>
+              {lineItems.map((item) => (
+                <div key={item.id} className="flex items-center justify-between text-xs">
+                  <span className="text-stone-500">{item.name}</span>
+                  <span className="font-mono text-stone-700">${item.amount.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {!paidWith && lineItems.length === 0 && (
+            <p className="text-xs text-stone-400">No details yet.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

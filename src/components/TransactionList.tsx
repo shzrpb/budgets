@@ -7,7 +7,7 @@ import FixedTransactionsSection from "@/components/FixedTransactionsSection";
 import SwipeActions from "@/components/SwipeActions";
 import TransactionIcon from "@/components/TransactionIcon";
 import { editDeleteActions } from "@/components/rowActions";
-import type { Account, Card, Category, Transaction } from "@/lib/types";
+import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types";
 
 const DAY_LABEL = new Intl.DateTimeFormat("en", {
   weekday: "short",
@@ -20,11 +20,13 @@ export default function TransactionList({
   categories,
   accounts,
   cards = [],
+  lineItems = [],
 }: {
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];
   cards?: Card[];
+  lineItems?: LineItem[];
 }) {
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const accountById = new Map(accounts.map((a) => [a.id, a]));
@@ -43,6 +45,7 @@ export default function TransactionList({
         categories={categories}
         accounts={accounts}
         cards={cards}
+        lineItems={lineItems}
       />
 
       {daily.length === 0 ? (

@@ -5,7 +5,7 @@ import AddMoreButton from "@/components/AddMoreButton";
 import FixedSheet from "@/components/FixedSheet";
 import FixedTransactionList, { FixedRow } from "@/components/FixedTransactionList";
 import { MinusIcon, PlusIcon } from "@/components/icons";
-import type { Account, Card, Category, Transaction } from "@/lib/types";
+import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types";
 
 /** How much of each covered card peeks out in the collapsed stack. */
 const PEEK_HEIGHT = 40;
@@ -28,11 +28,13 @@ export default function FixedTransactionsSection({
   categories,
   accounts,
   cards,
+  lineItems = [],
 }: {
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];
   cards: Card[];
+  lineItems?: LineItem[];
 }) {
   const [expanded, setExpanded] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -84,6 +86,7 @@ export default function FixedTransactionsSection({
             categories={categories}
             accounts={accounts}
             cards={cards}
+            lineItems={lineItems}
           />
           <AddMoreButton onClick={() => setAdding(true)} />
         </>

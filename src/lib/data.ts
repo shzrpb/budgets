@@ -6,6 +6,7 @@ import type {
   Card,
   Category,
   Goal,
+  LineItem,
   Settings,
   Transaction,
 } from "@/lib/types";
@@ -174,4 +175,13 @@ export async function getRecentTransactions(limit = 200): Promise<Transaction[]>
     .order("created_at", { ascending: false })
     .limit(limit);
   return (data as Transaction[]) ?? [];
+}
+
+export async function getLineItems(): Promise<LineItem[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("transaction_line_items")
+    .select("*")
+    .order("sort_order");
+  return (data as LineItem[]) ?? [];
 }
