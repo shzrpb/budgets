@@ -36,6 +36,7 @@ export default async function Home() {
   const overLimitCards = cards.filter(
     (c) => c.max_spend != null && (cardMonthSpend.get(c.id) ?? 0) > c.max_spend,
   );
+  const spent = monthTransactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <div className="flex h-full flex-col gap-2.5 overflow-hidden px-4 pt-4 pb-24">
@@ -53,7 +54,14 @@ export default async function Home() {
         overLimitCards={overLimitCards}
       />
 
-      <AddTransactionSheet categories={categories} accounts={accounts} cards={cards} />
+      <AddTransactionSheet
+        categories={categories}
+        accounts={accounts}
+        cards={cards}
+        monthlyBudget={settings?.monthly_budget ?? 0}
+        spent={spent}
+        transactionCount={monthTransactions.length}
+      />
     </div>
   );
 }

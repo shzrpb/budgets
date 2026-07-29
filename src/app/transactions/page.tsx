@@ -40,7 +40,14 @@ export default async function TransactionsPage() {
         lineItems={lineItems}
       />
 
-      <AddTransactionSheet categories={categories} accounts={accounts} cards={cards} />
+      <AddTransactionSheet
+        categories={categories}
+        accounts={accounts}
+        cards={cards}
+        monthlyBudget={settings?.monthly_budget ?? 0}
+        spent={spent}
+        transactionCount={monthTransactions.length}
+      />
 
       <div className="h-16" />
     </div>
