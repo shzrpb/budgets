@@ -52,10 +52,14 @@ export default function CardDueReminder({
           className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-br from-orange-50 to-amber-100 px-4 py-3"
         >
           <span className="h-2 w-2 shrink-0 rounded-full bg-orange-600" />
-          <p className="flex-1 text-xs text-orange-700">
-            <span className="font-medium">{card.name}</span> bill {dueLabel(days)} ·{" "}
-            {formatDueDate(due)} · ${outstanding.toLocaleString()}
-          </p>
+          <div className="flex-1 text-xs text-orange-700">
+            <p>
+              <span className="font-medium">{card.name}</span> bill {dueLabel(days)}
+            </p>
+            <p className="text-orange-600/70">
+              {formatDueDate(due)} · ${outstanding.toLocaleString()}
+            </p>
+          </div>
           <button
             type="button"
             onClick={() => setPaying(card)}
