@@ -4,6 +4,45 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { PaymentMethod, Recurrence, TransactionType } from "@/lib/types";
 
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Transactions linked to an account (income, or cash spend) move that
+ * account's balance directly, mirroring what a manual balance edit does —
+ * otherwise net worth never reflects money actually coming in or going out.
+ */
+async function adjustAccountBalance(
+  supabase: SupabaseClient,
+  userId: string,
+  accountId: string,
+  delta: number,
+) {
+  const { data: account, error: fetchError } = await supabase
+    .from("accounts")
+    .select("balance")
+    .eq("id", accountId)
+    .single();
+  if (fetchError) throw new Error(fetchError.message);
+
+  const balance = account.balance + delta;
+
+  const { error } = await supabase
+    .from("accounts")
+    .update({ balance, updated_at: new Date().toISOString() })
+    .eq("id", accountId);
+  if (error) throw new Error(error.message);
+
+  await supabase.from("account_balance_history").insert({
+    account_id: accountId,
+    user_id: userId,
+    balance,
+  });
+}
+
+function signedDelta(type: TransactionType, amount: number): number {
+  return type === "income" ? amount : -amount;
+}
+
 export async function addTransaction(input: {
   amount: number;
   type: TransactionType;
@@ -37,8 +76,18 @@ export async function addTransaction(input: {
   });
   if (error) throw new Error(error.message);
 
+  if (input.accountId) {
+    await adjustAccountBalance(
+      supabase,
+      user.id,
+      input.accountId,
+      signedDelta(input.type, input.amount),
+    );
+  }
+
   revalidatePath("/");
   revalidatePath("/transactions");
+  revalidatePath("/accounts");
 }
 
 export async function updateTransaction(
@@ -56,6 +105,18 @@ export async function updateTransaction(
   },
 ) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("transactions")
+    .select("amount, type, account_id")
+    .eq("id", id)
+    .single();
+  if (fetchError) throw new Error(fetchError.message);
+
   const { error } = await supabase
     .from("transactions")
     .update({
@@ -72,8 +133,26 @@ export async function updateTransaction(
     .eq("id", id);
   if (error) throw new Error(error.message);
 
+  if (existing.account_id) {
+    await adjustAccountBalance(
+      supabase,
+      user.id,
+      existing.account_id,
+      -signedDelta(existing.type, existing.amount),
+    );
+  }
+  if (input.accountId) {
+    await adjustAccountBalance(
+      supabase,
+      user.id,
+      input.accountId,
+      signedDelta(input.type, input.amount),
+    );
+  }
+
   revalidatePath("/");
   revalidatePath("/transactions");
+  revalidatePath("/accounts");
 }
 
 export async function reorderFixedTransactions(orderedIds: string[]) {
@@ -98,10 +177,33 @@ export async function reorderFixedTransactions(orderedIds: string[]) {
 
 export async function deleteTransaction(id: string) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not signed in");
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("transactions")
+    .select("amount, type, account_id")
+    .eq("id", id)
+    .single();
+  if (fetchError) throw new Error(fetchError.message);
+
   const { error } = await supabase.from("transactions").delete().eq("id", id);
   if (error) throw new Error(error.message);
+
+  if (existing.account_id) {
+    await adjustAccountBalance(
+      supabase,
+      user.id,
+      existing.account_id,
+      -signedDelta(existing.type, existing.amount),
+    );
+  }
+
   revalidatePath("/");
   revalidatePath("/transactions");
+  revalidatePath("/accounts");
 }
 
 export async function addAccount(input: {
