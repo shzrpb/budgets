@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const ACTION_WIDTH = 56;
 const CONFIRM_WIDTH = 104;
@@ -28,6 +28,7 @@ export default function SwipeActions({
     actions.length * ACTION_WIDTH + (confirming ? CONFIRM_WIDTH - ACTION_WIDTH : 0);
   const [translateX, setTranslateX] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const openRef = useRef(0);
   const startXRef = useRef(0);
   const draggedRef = useRef(false);
@@ -35,6 +36,7 @@ export default function SwipeActions({
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number | null>(null);
   const pendingXRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     return () => {
@@ -42,11 +44,31 @@ export default function SwipeActions({
     };
   }, []);
 
-  function clearConfirm() {
+  const clearConfirm = useCallback(() => {
     if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
     confirmTimerRef.current = null;
     setConfirming(null);
-  }
+  }, []);
+
+  const close = useCallback(() => {
+    openRef.current = 0;
+    setTranslateX(0);
+    setIsOpen(false);
+    clearConfirm();
+  }, [clearConfirm]);
+
+  // A tap anywhere outside this row — including on another row — should
+  // close the tray, same as tapping the row itself does.
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleOutsidePointerDown(e: PointerEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        close();
+      }
+    }
+    document.addEventListener("pointerdown", handleOutsidePointerDown);
+    return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
+  }, [isOpen, close]);
 
   function handlePointerDown(e: React.PointerEvent) {
     startXRef.current = e.clientX;
@@ -80,19 +102,21 @@ export default function SwipeActions({
       rafRef.current = null;
     }
     if (draggedRef.current) {
-      const shouldOpen = pendingXRef.current < -revealWidth / 8;
+      // Threshold is relative to where this drag started, not a fixed
+      // anchor — otherwise closing an already-open tray needs a drag of
+      // nearly the full reveal width instead of the same short flick that
+      // opens it.
+      const startOpen = wasOpenAtStartRef.current ? -revealWidth : 0;
+      const movedTowardOpen = pendingXRef.current - startOpen < -14;
+      const movedTowardClosed = pendingXRef.current - startOpen > 14;
+      const shouldOpen = wasOpenAtStartRef.current ? !movedTowardClosed : movedTowardOpen;
       openRef.current = shouldOpen ? -revealWidth : 0;
       setTranslateX(openRef.current);
+      setIsOpen(shouldOpen);
       if (!shouldOpen) clearConfirm();
     } else if (openRef.current !== 0) {
       close();
     }
-  }
-
-  function close() {
-    openRef.current = 0;
-    setTranslateX(0);
-    clearConfirm();
   }
 
   function handleAction(action: SwipeAction) {
@@ -101,6 +125,7 @@ export default function SwipeActions({
       // Widen the tray so the confirm pill isn't clipped by the row edge.
       openRef.current = -(actions.length * ACTION_WIDTH + CONFIRM_WIDTH - ACTION_WIDTH);
       setTranslateX(openRef.current);
+      setIsOpen(true);
       if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
       confirmTimerRef.current = setTimeout(clearConfirm, CONFIRM_TIMEOUT_MS);
       return;
@@ -110,7 +135,7 @@ export default function SwipeActions({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl">
+    <div ref={containerRef} className="relative overflow-hidden rounded-3xl">
       <div className="absolute inset-y-0 right-0 flex items-center gap-2 pr-2">
         {actions.map((action) => {
           const isConfirming = confirming === action.label;

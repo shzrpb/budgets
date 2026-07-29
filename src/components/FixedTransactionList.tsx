@@ -35,6 +35,8 @@ export default function FixedTransactionList({
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [rowPitch, setRowPitch] = useState(0);
 
   const currentKey = keyOf(transactions);
   if (currentKey !== syncedKey) {
@@ -54,13 +56,24 @@ export default function FixedTransactionList({
     }
   }
 
+  /** Row pitch (height + gap) — assumes uniform row height, measured once per drag. */
+  function measureRowPitch(): number {
+    const rows = rowRefs.current;
+    const first = rows[0]?.getBoundingClientRect();
+    const second = rows[1]?.getBoundingClientRect();
+    if (first && second) return second.top - first.top;
+    return (first?.height ?? 72) + 8;
+  }
+
   function handleHandlePointerDown(e: React.PointerEvent, index: number, id: string) {
     startYRef.current = e.clientY;
     const target = e.currentTarget as HTMLElement;
     longPressTimerRef.current = setTimeout(() => {
       dragIndexRef.current = index;
+      setRowPitch(measureRowPitch());
       setDraggingId(id);
       setDragOffset(0);
+      setHoverIndex(index);
       target.setPointerCapture(e.pointerId);
     }, LONG_PRESS_MS);
   }
@@ -70,46 +83,60 @@ export default function FixedTransactionList({
       if (Math.abs(e.clientY - startYRef.current) > 10) clearLongPress();
       return;
     }
-    const dy = e.clientY - startYRef.current;
-    setDragOffset(dy);
-
     const dragIndex = dragIndexRef.current;
-    const rows = rowRefs.current;
-    const pointerY = e.clientY;
-
-    for (let i = 0; i < rows.length; i++) {
-      if (i === dragIndex) continue;
-      const rect = rows[i]?.getBoundingClientRect();
-      if (!rect) continue;
-      const mid = rect.top + rect.height / 2;
-      if ((i < dragIndex && pointerY < mid) || (i > dragIndex && pointerY > mid)) {
-        setOrder((prev) => {
-          const next = [...prev];
-          const [moved] = next.splice(dragIndex, 1);
-          next.splice(i, 0, moved);
-          return next;
-        });
-        dragIndexRef.current = i;
-        startYRef.current = e.clientY - dy;
-        break;
-      }
-    }
+    const pitch = rowPitch || 72;
+    const dy = e.clientY - startYRef.current;
+    // Bound the drag to the list itself — it can only move as far as there
+    // are rows above or below it, never past the edges of the container.
+    const maxUp = dragIndex * pitch;
+    const maxDown = (order.length - 1 - dragIndex) * pitch;
+    const clampedDy = Math.min(maxDown, Math.max(-maxUp, dy));
+    setDragOffset(clampedDy);
+    const hover = Math.min(
+      order.length - 1,
+      Math.max(0, dragIndex + Math.round(clampedDy / pitch)),
+    );
+    setHoverIndex(hover);
   }
 
   function handleHandlePointerUp() {
     clearLongPress();
     if (dragIndexRef.current !== null) {
+      const dragIndex = dragIndexRef.current;
+      const targetIndex = hoverIndex ?? dragIndex;
       dragIndexRef.current = null;
       setDraggingId(null);
       setDragOffset(0);
-      startTransition(() => reorderFixedTransactions(order.map((t) => t.id)));
+      setHoverIndex(null);
+      if (targetIndex !== dragIndex) {
+        const next = [...order];
+        const [moved] = next.splice(dragIndex, 1);
+        next.splice(targetIndex, 0, moved);
+        setOrder(next);
+        startTransition(() => reorderFixedTransactions(next.map((t) => t.id)));
+      }
     }
   }
+
+  // Index of the row being dragged, derived from state (not the ref, which
+  // is only for synchronous access inside event handlers) so this stays
+  // valid to read during render.
+  const draggingIndex = draggingId ? order.findIndex((t) => t.id === draggingId) : -1;
 
   return (
     <>
       <div className="flex flex-col gap-2">
-        {order.map((t, index) => (
+        {order.map((t, index) => {
+          const isDragging = draggingId === t.id;
+          // Rows between the dragged item's original slot and its current
+          // hover slot shift by one row pitch to open up a gap for it —
+          // the underlying order only actually changes on drop.
+          let shift = 0;
+          if (!isDragging && draggingIndex !== -1 && hoverIndex !== null) {
+            if (draggingIndex < hoverIndex && index > draggingIndex && index <= hoverIndex) shift = -1;
+            else if (draggingIndex > hoverIndex && index >= hoverIndex && index < draggingIndex) shift = 1;
+          }
+          return (
           <div
             key={t.id}
             ref={(el) => {
@@ -117,9 +144,13 @@ export default function FixedTransactionList({
             }}
             className="relative"
             style={{
-              transform: draggingId === t.id ? `translateY(${dragOffset}px)` : undefined,
-              zIndex: draggingId === t.id ? 10 : undefined,
-              transition: draggingId === t.id ? "none" : "transform 150ms ease-out",
+              transform: isDragging
+                ? `translateY(${dragOffset}px)`
+                : shift
+                  ? `translateY(${shift * rowPitch}px)`
+                  : undefined,
+              zIndex: isDragging ? 10 : undefined,
+              transition: isDragging ? "none" : "transform 150ms ease-out",
             }}
           >
             <SwipeActions
@@ -139,7 +170,8 @@ export default function FixedTransactionList({
               />
             </SwipeActions>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {editing && (
