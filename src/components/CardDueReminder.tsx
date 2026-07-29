@@ -49,7 +49,7 @@ export default function CardDueReminder({
       {dueSoon.map(({ card, due, days, outstanding }) => (
         <div
           key={card.id}
-          className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-br from-orange-50 to-amber-100 px-4 py-3"
+          className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-br from-orange-50 to-red-50 px-4 py-3 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60"
         >
           <span className="h-2 w-2 shrink-0 rounded-full bg-orange-600" />
           <div className="flex-1 text-xs text-orange-700">

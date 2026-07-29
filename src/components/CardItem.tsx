@@ -51,7 +51,9 @@ export default function CardItem({
           deleteLabel: "Delete card",
         })}
       >
-        <div className={`rounded-3xl bg-gradient-to-br from-white ${TINTS[index % TINTS.length]} p-5 shadow-sm`}>
+        <div
+          className={`rounded-3xl bg-gradient-to-br from-white ${TINTS[index % TINTS.length]} p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60`}
+        >
           <div className="flex items-center gap-3">
             <span className="h-3 w-3 rounded-full" style={{ backgroundColor: card.color }} />
             <p className="text-sm font-medium text-stone-800">{card.name}</p>

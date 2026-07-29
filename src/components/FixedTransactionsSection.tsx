@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import FixedSheet from "@/components/FixedSheet";
 import FixedTransactionList from "@/components/FixedTransactionList";
 import { PlusIcon } from "@/components/icons";
@@ -9,7 +9,8 @@ import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types
 /** How much of each covered card peeks out in the collapsed stack. */
 const PEEK_HEIGHT = 44;
 const ROW_HEIGHT = 60;
-const MAX_STACKED = 4;
+/** Window for a second tap to register as a double tap, collapsing the stack. */
+const DOUBLE_TAP_MS = 260;
 
 const CADENCE_STYLES: Record<string, string> = {
   yearly: "bg-violet-100 text-violet-500",
@@ -42,12 +43,26 @@ export default function FixedTransactionsSection({
   lineItems?: LineItem[];
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [totalOnly, setTotalOnly] = useState(false);
   const [adding, setAdding] = useState(false);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const net = monthlyNet(transactions);
-  const stacked = transactions.slice(0, MAX_STACKED);
-  const hidden = transactions.length - stacked.length;
   const categoryById = new Map(categories.map((c) => [c.id, c]));
+
+  /** Single tap expands the full list; a second tap within the window collapses to totals-only instead. */
+  function handleStackTap() {
+    if (tapTimer.current) {
+      clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+      setTotalOnly((v) => !v);
+      return;
+    }
+    tapTimer.current = setTimeout(() => {
+      tapTimer.current = null;
+      setExpanded(true);
+    }, DOUBLE_TAP_MS);
+  }
 
   return (
     <div>
@@ -84,16 +99,31 @@ export default function FixedTransactionsSection({
           showDetail
           onRowClick={() => setExpanded(false)}
         />
+      ) : totalOnly ? (
+        <button
+          type="button"
+          onClick={handleStackTap}
+          aria-label="Show fixed transaction previews"
+          className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3.5 text-left shadow-sm"
+          style={{ height: ROW_HEIGHT }}
+        >
+          <p className="text-sm font-medium text-stone-800">
+            {transactions.length} fixed item{transactions.length === 1 ? "" : "s"}
+          </p>
+          <p className={`text-sm font-semibold ${net >= 0 ? "text-emerald-600" : "text-stone-900"}`}>
+            {net >= 0 ? "+" : "−"}${Math.abs(Math.round(net)).toLocaleString()}/mo
+          </p>
+        </button>
       ) : (
         <button
           type="button"
-          onClick={() => setExpanded(true)}
+          onClick={handleStackTap}
           aria-label={`Expand ${transactions.length} fixed transactions`}
           aria-expanded={false}
           className="relative block w-full text-left"
-          style={{ height: (stacked.length - 1) * PEEK_HEIGHT + ROW_HEIGHT }}
+          style={{ height: (transactions.length - 1) * PEEK_HEIGHT + ROW_HEIGHT }}
         >
-          {stacked.map((t, i) => {
+          {transactions.map((t, i) => {
             const category = t.category_id ? categoryById.get(t.category_id) : undefined;
             const dotColor = t.type === "income" ? "#10b981" : category?.color ?? "#a8a29e";
             return (
@@ -128,14 +158,6 @@ export default function FixedTransactionsSection({
               </div>
             );
           })}
-          {hidden > 0 && (
-            <span
-              className="absolute bottom-2 right-4 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500"
-              style={{ zIndex: stacked.length }}
-            >
-              +{hidden} more
-            </span>
-          )}
         </button>
       )}
 

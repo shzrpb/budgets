@@ -58,7 +58,7 @@ export default function TopNav() {
   const isHome = pathname === "/";
 
   return (
-    <nav className="px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
+    <nav className="px-4 pb-[calc(max(1rem,env(safe-area-inset-bottom))+10px)] pt-2">
       <div className={`flex h-14 rounded-full bg-stone-100 p-1 ${isHome ? "gap-4" : "gap-1.5"}`}>
         {TABS.map(({ href, label, Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);

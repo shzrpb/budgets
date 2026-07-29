@@ -1,10 +1,50 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import CategoryPill from "@/components/CategoryPill";
+import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Card, Category, Transaction } from "@/lib/types";
 
 const MONTH_LABEL = new Intl.DateTimeFormat("en", { month: "long" });
 
+/** Approximate chip row height + row gap (gap-2), used only to figure out how many rows fit. */
+const CHIP_ROW_HEIGHT = 32;
+const ROW_GAP = 8;
+/** Estimated inner width (px) of the card's chip row, used only to pack chips tightly. */
+const ROW_WIDTH = 300;
+
 function fmtAbs(n: number): string {
   return Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+
+/** Rough pixel width of a category chip, from its text length — good enough for packing, not pixel-perfect. */
+function estimateChipWidth(name: string, amount: number): number {
+  return 30 + name.length * 7.2 + amount.toLocaleString().length * 7.5;
+}
+
+type CategoryTotal = { category: Category; amount: number };
+
+/**
+ * Greedily packs chips into fixed-width rows (first-fit, largest first) so
+ * each row uses as much of its space as possible, instead of just listing
+ * chips in amount order and letting them wrap wherever they happen to fall.
+ */
+function packIntoRows(totals: CategoryTotal[], rowWidth: number): CategoryTotal[][] {
+  const byWidth = [...totals].sort(
+    (a, b) => estimateChipWidth(b.category.name, b.amount) - estimateChipWidth(a.category.name, a.amount),
+  );
+  const rows: { items: CategoryTotal[]; used: number }[] = [];
+  for (const item of byWidth) {
+    const width = estimateChipWidth(item.category.name, item.amount);
+    const row = rows.find((r) => r.used + width <= rowWidth);
+    if (row) {
+      row.items.push(item);
+      row.used += width;
+    } else {
+      rows.push({ items: [item], used: width });
+    }
+  }
+  return rows.map((r) => r.items);
 }
 
 export default function MonthGlanceCard({
@@ -18,6 +58,27 @@ export default function MonthGlanceCard({
   monthlyBudget: number;
   overLimitCards?: Card[];
 }) {
+  const [showAll, setShowAll] = useState(false);
+  useRegisterSheetOpen(showAll);
+
+  // The homepage is a fixed, non-scrolling page — however much room is left
+  // under the alerts/progress bar is however much room the chips get. More
+  // alerts above means less space here, and vice versa.
+  const chipAreaRef = useRef<HTMLDivElement>(null);
+  const [maxRows, setMaxRows] = useState(3);
+
+  useEffect(() => {
+    const el = chipAreaRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const height = entries[0]?.contentRect.height ?? 0;
+      const rows = Math.max(1, Math.floor((height + ROW_GAP) / (CHIP_ROW_HEIGHT + ROW_GAP)));
+      setMaxRows(rows);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const spent = transactions.reduce((sum, t) => sum + t.amount, 0);
   const progress = monthlyBudget > 0 ? Math.min(spent / monthlyBudget, 1) : 0;
   const nearLimit = monthlyBudget > 0 && spent / monthlyBudget >= 0.8;
@@ -37,11 +98,19 @@ export default function MonthGlanceCard({
     .filter((c) => c.amount > 0)
     .sort((a, b) => b.amount - a.amount);
 
+  const allRows = packIntoRows(categoryTotals, ROW_WIDTH);
+  // If everything fits within the measured space, show it all. Otherwise
+  // reserve the last row purely for "See all" so it never gets clipped.
+  const fitsFully = allRows.length <= maxRows;
+  const visibleRows = fitsFully ? allRows : allRows.slice(0, Math.max(0, maxRows - 1));
+  const visible = visibleRows.flat();
+  const hiddenCount = categoryTotals.length - visible.length;
+
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-white to-amber-50 p-4 shadow-sm">
+    <div className="flex min-h-0 flex-1 flex-col rounded-3xl bg-gradient-to-br from-white to-amber-50 p-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-stone-700">
-          {MONTH_LABEL.format(now)} spending
+          {MONTH_LABEL.format(now)} at a glance
         </p>
         <p className="font-mono text-xs text-stone-400">
           ${spent.toLocaleString()} / {monthlyBudget.toLocaleString()}
@@ -66,16 +135,71 @@ export default function MonthGlanceCard({
       )}
 
       {categoryTotals.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {categoryTotals.map(({ category, amount }) => (
-            <CategoryPill
-              key={category.id}
-              name={category.name}
-              amount={amount}
-            />
-          ))}
+        <div ref={chipAreaRef} className="mt-4 min-h-0 flex-1 overflow-hidden">
+          <div className="flex flex-wrap gap-2">
+            {visible.map(({ category, amount }) => (
+              <CategoryPill key={category.id} name={category.name} amount={amount} />
+            ))}
+          </div>
+          {hiddenCount > 0 && (
+            <div className="mt-2 flex">
+              <button
+                type="button"
+                onClick={() => setShowAll(true)}
+                className="inline-flex items-center rounded-full bg-stone-800 px-3 py-1.5 text-sm font-medium text-white"
+              >
+                See all
+              </button>
+            </div>
+          )}
         </div>
       )}
+
+      {showAll && (
+        <BreakdownSheet
+          month={MONTH_LABEL.format(now)}
+          totals={categoryTotals}
+          onClose={() => setShowAll(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function BreakdownSheet({
+  month,
+  totals,
+  onClose,
+}: {
+  month: string;
+  totals: CategoryTotal[];
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-stone-800">{month} breakdown</p>
+          <button type="button" onClick={onClose} className="text-sm text-stone-400">
+            Close
+          </button>
+        </div>
+        <div className="mt-4 flex flex-col gap-1">
+          {totals.map(({ category, amount }) => (
+            <div key={category.id} className="flex items-center justify-between py-1.5">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: category.color }} />
+                <p className="text-sm text-stone-700">{category.name}</p>
+              </div>
+              <p className="font-mono text-sm text-stone-800">${amount.toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
