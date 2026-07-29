@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const ACTION_WIDTH = 56;
 const CONFIRM_WIDTH = 104;
@@ -33,6 +33,14 @@ export default function SwipeActions({
   const draggedRef = useRef(false);
   const wasOpenAtStartRef = useRef(false);
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const pendingXRef = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   function clearConfirm() {
     if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
@@ -53,13 +61,26 @@ export default function SwipeActions({
     const dx = e.clientX - startXRef.current;
     if (Math.abs(dx) > DRAG_THRESHOLD) draggedRef.current = true;
     const next = Math.min(0, Math.max(-revealWidth, openRef.current + dx));
-    setTranslateX(next);
+    pendingXRef.current = next;
+    // Native pointermove can fire far more often than the display repaints
+    // (e.g. 120Hz), so batch the state update to one per animation frame
+    // instead of re-rendering on every event — otherwise the drag stutters.
+    if (rafRef.current === null) {
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        setTranslateX(pendingXRef.current);
+      });
+    }
   }
 
   function handlePointerUp() {
     setDragging(false);
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     if (draggedRef.current) {
-      const shouldOpen = translateX < -revealWidth / 2;
+      const shouldOpen = pendingXRef.current < -revealWidth / 2;
       openRef.current = shouldOpen ? -revealWidth : 0;
       setTranslateX(openRef.current);
       if (!shouldOpen) clearConfirm();
@@ -121,9 +142,10 @@ export default function SwipeActions({
         }}
         className="w-full select-none"
         style={{
-          transform: `translateX(${translateX}px)`,
+          transform: `translate3d(${translateX}px, 0, 0)`,
           transition: dragging ? "none" : "transform 200ms ease-out",
           touchAction: "pan-y",
+          willChange: "transform",
         }}
       >
         {children}

@@ -13,10 +13,10 @@ export default function DateTimeClock() {
     return () => clearInterval(id);
   }, []);
 
-  if (!now) return <div className="h-7" />;
+  if (!now) return <div className="h-5" />;
 
   return (
-    <div className="pl-2 text-base tabular-nums text-stone-400">
+    <div className="pl-2 text-sm tabular-nums text-stone-400">
       {now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
       {" · "}
       {now.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" })}

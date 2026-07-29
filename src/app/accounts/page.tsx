@@ -14,7 +14,7 @@ export default async function AccountsPage() {
     <div className="flex flex-col gap-4 px-4 pt-6">
       <PageHeader title="Accounts" />
 
-      <p className="text-sm text-stone-500">
+      <p className="pl-2 text-sm text-stone-500">
         Total net worth: <span className="font-medium text-stone-800">${netWorth.toLocaleString()}</span>
       </p>
 
