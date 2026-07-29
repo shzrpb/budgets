@@ -80,7 +80,7 @@ export default function SwipeActions({
       rafRef.current = null;
     }
     if (draggedRef.current) {
-      const shouldOpen = pendingXRef.current < -revealWidth / 5;
+      const shouldOpen = pendingXRef.current < -revealWidth / 8;
       openRef.current = shouldOpen ? -revealWidth : 0;
       setTranslateX(openRef.current);
       if (!shouldOpen) clearConfirm();
