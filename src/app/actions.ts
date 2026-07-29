@@ -54,6 +54,8 @@ export async function addTransaction(input: {
   occurredAt?: string;
   isFixed?: boolean;
   recurrence?: Recurrence;
+  /** Line items to seed the transaction with, created in the same flow. */
+  lineItems?: { name: string; amount: number }[];
 }) {
   const supabase = await createClient();
   const {
@@ -61,20 +63,38 @@ export async function addTransaction(input: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not signed in");
 
-  const { error } = await supabase.from("transactions").insert({
-    user_id: user.id,
-    amount: input.amount,
-    type: input.type,
-    category_id: input.categoryId,
-    account_id: input.accountId,
-    payment_method: input.paymentMethod,
-    card_id: input.paymentMethod === "credit" ? input.cardId ?? null : null,
-    note: input.note ?? null,
-    occurred_at: input.occurredAt ?? new Date().toISOString().slice(0, 10),
-    is_fixed: input.isFixed ?? false,
-    recurrence: input.recurrence ?? "none",
-  });
+  const { data: inserted, error } = await supabase
+    .from("transactions")
+    .insert({
+      user_id: user.id,
+      amount: input.amount,
+      type: input.type,
+      category_id: input.categoryId,
+      account_id: input.accountId,
+      payment_method: input.paymentMethod,
+      card_id: input.paymentMethod === "credit" ? input.cardId ?? null : null,
+      note: input.note ?? null,
+      occurred_at: input.occurredAt ?? new Date().toISOString().slice(0, 10),
+      is_fixed: input.isFixed ?? false,
+      recurrence: input.recurrence ?? "none",
+    })
+    .select()
+    .single();
   if (error) throw new Error(error.message);
+
+  if (input.lineItems && input.lineItems.length > 0) {
+    const { error: itemsError } = await supabase.from("transaction_line_items").insert(
+      input.lineItems.map((item, index) => ({
+        user_id: user.id,
+        transaction_id: inserted.id,
+        name: item.name,
+        amount: item.amount,
+        sort_order: index,
+      })),
+    );
+    if (itemsError) throw new Error(itemsError.message);
+    await syncLineItemTotal(supabase, inserted.id);
+  }
 
   if (input.accountId) {
     await adjustAccountBalance(
@@ -632,7 +652,7 @@ export async function upsertGoal(input: {
   revalidatePath("/");
 }
 
-export async function addCategory(input: { name: string }) {
+export async function addCategory(input: { name: string; isFixed?: boolean }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -642,6 +662,7 @@ export async function addCategory(input: { name: string }) {
   const { error } = await supabase.from("categories").insert({
     user_id: user.id,
     name: input.name,
+    is_fixed: input.isFixed ?? false,
   });
   if (error) throw new Error(error.message);
 

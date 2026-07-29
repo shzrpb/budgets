@@ -23,10 +23,11 @@ export default function FixedSheetForm({
   onClose: () => void;
 }) {
   const isEdit = !!transaction;
+  const fixedCategories = categories.filter((c) => c.is_fixed);
   const [type, setType] = useState<TransactionType>(transaction?.type ?? "spend");
   const [amount, setAmount] = useState(transaction?.amount.toString() ?? "");
   const [categoryId, setCategoryId] = useState<string | null>(
-    transaction?.category_id ?? categories[0]?.id ?? null,
+    transaction?.category_id ?? fixedCategories[0]?.id ?? null,
   );
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
     transaction?.payment_method ?? "cash",
@@ -55,28 +56,32 @@ export default function FixedSheetForm({
 
   function handleAddItem() {
     const value = Number(newItemAmount);
-    if (!newItemName.trim() || !(value > 0) || !transaction) return;
-    const tempId = `pending-${Date.now()}`;
+    if (!newItemName.trim() || !(value > 0)) return;
+    const name = newItemName.trim();
+    // In create mode there's no transaction row yet, so new items just live
+    // in local state — they get persisted together with the transaction on Save.
+    const tempId = isEdit && transaction ? `pending-${Date.now()}` : `draft-${Date.now()}`;
     setItems((prev) => [
       ...prev,
       {
         id: tempId,
-        user_id: transaction.user_id,
-        transaction_id: transaction.id,
-        name: newItemName.trim(),
+        user_id: transaction?.user_id ?? "",
+        transaction_id: transaction?.id ?? "",
+        name,
         amount: value,
         sort_order: prev.length,
         created_at: new Date().toISOString(),
       },
     ]);
     setAmount((itemsTotal + value).toString());
-    const name = newItemName.trim();
     setNewItemName("");
     setNewItemAmount("");
-    startLineItemTransition(async () => {
-      const inserted = await addLineItem(transaction.id, { name, amount: value });
-      setItems((prev) => prev.map((i) => (i.id === tempId ? (inserted as LineItem) : i)));
-    });
+    if (isEdit && transaction) {
+      startLineItemTransition(async () => {
+        const inserted = await addLineItem(transaction.id, { name, amount: value });
+        setItems((prev) => prev.map((i) => (i.id === tempId ? (inserted as LineItem) : i)));
+      });
+    }
   }
 
   /** Local edit only, so typing doesn't fire a request per keystroke. */
@@ -84,12 +89,14 @@ export default function FixedSheetForm({
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, name, amount: itemAmount } : i)));
   }
 
-  /** Persists the field on blur, once the value has settled. */
+  /** Persists the field on blur, once the value has settled (create mode just recomputes the total). */
   function commitItem(id: string) {
     const item = items.find((i) => i.id === id);
     if (!item || !(item.amount > 0) || !item.name.trim() || item.id.startsWith("pending-")) return;
     setAmount(items.reduce((sum, i) => sum + i.amount, 0).toString());
-    startLineItemTransition(() => updateLineItem(id, { name: item.name.trim(), amount: item.amount }));
+    if (isEdit) {
+      startLineItemTransition(() => updateLineItem(id, { name: item.name.trim(), amount: item.amount }));
+    }
   }
 
   function handleDeleteItem(id: string) {
@@ -100,7 +107,7 @@ export default function FixedSheetForm({
     if (remaining.length > 0) {
       setAmount(remaining.reduce((sum, i) => sum + i.amount, 0).toString());
     }
-    startLineItemTransition(() => deleteLineItem(id));
+    if (isEdit) startLineItemTransition(() => deleteLineItem(id));
   }
 
   function handlePaymentMethod(method: PaymentMethod) {
@@ -132,7 +139,11 @@ export default function FixedSheetForm({
       if (isEdit) {
         await updateTransaction(transaction!.id, input);
       } else {
-        await addTransaction({ ...input, isFixed: true });
+        await addTransaction({
+          ...input,
+          isFixed: true,
+          lineItems: hasLineItems ? items.map((i) => ({ name: i.name, amount: i.amount })) : undefined,
+        });
       }
       onClose();
     });
@@ -188,10 +199,8 @@ export default function FixedSheetForm({
           <p className="mt-1 text-center text-xs text-stone-400">Sum of line items below</p>
         )}
 
-        {isEdit && (
-          <>
-            <p className="mt-5 text-xs font-medium text-stone-400">Line items</p>
-            <div className="mt-2 flex flex-col gap-2">
+        <p className="mt-5 text-xs font-medium text-stone-400">Line items</p>
+        <div className="mt-2 flex flex-col gap-2">
               {items.map((item) => (
                 <div key={item.id} className="flex items-center gap-2">
                   <input
@@ -246,15 +255,13 @@ export default function FixedSheetForm({
                   +
                 </button>
               </div>
-            </div>
-          </>
-        )}
+        </div>
 
         {type === "spend" && (
           <>
             <p className="mt-5 text-xs font-medium text-stone-400">Category</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {categories.map((c) => (
+              {fixedCategories.map((c) => (
                 <CategoryPill
                   key={c.id}
                   name={c.name}
@@ -363,7 +370,7 @@ export default function FixedSheetForm({
         </button>
       </div>
 
-      {addingCategory && <AddCategorySheet onClose={() => setAddingCategory(false)} />}
+      {addingCategory && <AddCategorySheet defaultFixed onClose={() => setAddingCategory(false)} />}
       {editingCategory && (
         <EditCategorySheet category={editingCategory} onClose={() => setEditingCategory(null)} />
       )}

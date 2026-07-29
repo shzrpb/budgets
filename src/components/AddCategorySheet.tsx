@@ -6,8 +6,15 @@ import type { Category } from "@/lib/types";
 
 const CONFIRM_TIMEOUT_MS = 3000;
 
-export default function AddCategorySheet({ onClose }: { onClose: () => void }) {
-  return <CategorySheetForm onClose={onClose} />;
+export default function AddCategorySheet({
+  onClose,
+  defaultFixed,
+}: {
+  onClose: () => void;
+  /** New categories created here go into the fixed-transaction picker instead of the daily one. */
+  defaultFixed?: boolean;
+}) {
+  return <CategorySheetForm onClose={onClose} defaultFixed={defaultFixed} />;
 }
 
 /** Opened by a long press on a category pill; lets you rename or delete it. */
@@ -21,7 +28,15 @@ export function EditCategorySheet({
   return <CategorySheetForm category={category} onClose={onClose} />;
 }
 
-function CategorySheetForm({ category, onClose }: { category?: Category; onClose: () => void }) {
+function CategorySheetForm({
+  category,
+  onClose,
+  defaultFixed,
+}: {
+  category?: Category;
+  onClose: () => void;
+  defaultFixed?: boolean;
+}) {
   const isEdit = !!category;
   const [name, setName] = useState(category?.name ?? "");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -33,7 +48,7 @@ function CategorySheetForm({ category, onClose }: { category?: Category; onClose
     if (!canSave) return;
     startTransition(async () => {
       if (isEdit) await updateCategory(category!.id, { name: name.trim() });
-      else await addCategory({ name: name.trim() });
+      else await addCategory({ name: name.trim(), isFixed: defaultFixed });
       onClose();
     });
   }

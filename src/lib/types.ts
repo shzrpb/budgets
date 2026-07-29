@@ -22,6 +22,8 @@ export interface Category {
   user_id: string;
   name: string;
   color: string;
+  /** Whether this category shows up in the fixed-transaction category picker. */
+  is_fixed: boolean;
   created_at: string;
 }
 
