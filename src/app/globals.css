@@ -52,7 +52,7 @@
 
 body {
   background: var(--mesh-bg);
-  background-size: 100dvh 100dvh;
+  background-size: cover;
   background-repeat: no-repeat;
   color: var(--foreground);
 }
