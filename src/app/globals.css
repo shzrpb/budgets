@@ -55,12 +55,9 @@ body {
   background-size: 100dvh 100dvh;
   background-repeat: no-repeat;
   color: var(--foreground);
-
-  html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: var(--mesh-bg);
 }
 
 .mesh-surface {
