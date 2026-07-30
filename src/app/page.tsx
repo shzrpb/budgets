@@ -6,6 +6,10 @@ import CardDueReminder from "@/components/CardDueReminder";
 import AddTransactionSheet from "@/components/AddTransactionSheet";
 import DateTimeClock from "@/components/DateTimeClock";
 
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
 export default async function Home() {
   const {
     accounts,
@@ -23,7 +27,7 @@ export default async function Home() {
   const netWorth = accounts.reduce((sum, a) => sum + a.balance, 0);
   const series = buildNetWorthSeries(history, 6, accountClosures);
 
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = daysAgo(30);
   const change30d = hasHistoryAtOrBefore(history, thirtyDaysAgo)
     ? netWorth - netWorthAsOf(history, thirtyDaysAgo, accountClosures)
     : null;
