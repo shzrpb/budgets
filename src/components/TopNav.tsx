@@ -62,8 +62,18 @@ export default function TopNav() {
     // child of the page column) so it always sits flush against the real
     // edge, even in a home-screen-installed webapp where iOS can report a
     // layout height that's shorter than the actual visible screen.
-    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[13px]">
-      <div className={`flex h-14 rounded-full bg-stone-100 p-1 ${isHome ? "gap-4" : "gap-1.5"}`}>
+    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md">
+      {/* Fades the scrolled content out before it reaches the pill, so list
+          rows don't show through the transparent gap around the nav. */}
+      <div
+        className="pointer-events-none absolute inset-0 backdrop-blur-md"
+        style={{
+          maskImage: "linear-gradient(to bottom, transparent, black 40%)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent, black 40%)",
+        }}
+      />
+      <div className="relative px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[13px]">
+        <div className={`flex h-14 rounded-full bg-stone-100 p-1 ${isHome ? "gap-4" : "gap-1.5"}`}>
         {TABS.map(({ href, label, Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
@@ -79,6 +89,7 @@ export default function TopNav() {
             </Link>
           );
         })}
+        </div>
       </div>
     </nav>
   );

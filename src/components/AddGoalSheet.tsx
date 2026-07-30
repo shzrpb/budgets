@@ -71,12 +71,14 @@ export default function AddGoalSheet({
               </div>
 
               <p className="mt-4 text-xs font-medium text-stone-400">Target date (optional)</p>
-              <input
-                type="date"
-                value={targetDate ?? ""}
-                onChange={(e) => setTargetDate(e.target.value)}
-                className="mt-2 block w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
-              />
+              <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 focus-within:border-stone-400">
+                <input
+                  type="date"
+                  value={targetDate ?? ""}
+                  onChange={(e) => setTargetDate(e.target.value)}
+                  className="w-full min-w-0 bg-transparent text-sm outline-none"
+                />
+              </div>
 
               <div className="mt-5 grid grid-cols-5 gap-2">
                 <button
