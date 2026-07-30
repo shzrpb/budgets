@@ -75,7 +75,7 @@ export default function AddGoalSheet({
                 type="date"
                 value={targetDate ?? ""}
                 onChange={(e) => setTargetDate(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
+                className="mt-2 w-full min-w-0 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
               />
 
               <div className="mt-5 grid grid-cols-5 gap-2">

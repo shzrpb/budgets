@@ -58,8 +58,13 @@ export default function CardItem({
             </p>
           )}
 
-          <div className="mt-3 flex items-center justify-between text-xs text-[var(--text-secondary)]">
-            <span className="font-mono">This month: ${formatMoney(monthSpend)}</span>
+          <div className="mt-3 flex items-end justify-between">
+            <div>
+              <p className="text-xs text-[var(--text-muted)]">This month</p>
+              <p className="font-mono text-lg font-semibold tracking-tight text-[var(--text-primary)]">
+                ${formatMoney(monthSpend)}
+              </p>
+            </div>
             {editing ? (
               <div className="flex items-center gap-1">
                 <span className="text-[var(--text-muted)]">$</span>
@@ -82,9 +87,9 @@ export default function CardItem({
                   setEditing(true);
                 }}
                 disabled={isPending}
-                className="font-mono font-medium text-[var(--text-primary)]"
+                className="font-mono text-xs text-[var(--text-muted)]"
               >
-                {card.max_spend != null ? `Limit: $${formatMoney(card.max_spend)}` : "Set limit"}
+                {card.max_spend != null ? `Limit $${formatMoney(card.max_spend)}` : "Set limit"}
               </button>
             )}
           </div>
