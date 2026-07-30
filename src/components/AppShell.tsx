@@ -14,8 +14,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   
   return (
     <div
-      className="fixed inset-x-0 top-0 flex flex-col text-stone-900">
-      style={{ height: height ?? "100dvh"}}
+      className="fixed inset-x-0 top-0 flex flex-col text-stone-900"
+      style={{ height: height ?? "100dvh"}}>
       {children}
     </div>
   );
