@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { addAccount, updateAccount } from "@/app/actions";
+import Portal from "@/components/Portal";
 import { PlusIcon } from "@/components/icons";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import { useVisualViewportInsets } from "@/lib/useVisualViewport";
@@ -61,6 +62,7 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
   }
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 bg-black/40">
       <div
         className="fixed inset-x-0 flex items-center justify-center p-4"
@@ -131,5 +133,6 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
       </div>
       </div>
     </div>
+    </Portal>
   );
 }

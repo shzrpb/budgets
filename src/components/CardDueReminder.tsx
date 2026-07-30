@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { daysUntil, formatDueDate, nextDueDate } from "@/lib/cards";
 import { payCardBill } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
+import Portal from "@/components/Portal";
 import { formatMoney } from "@/lib/format";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Account, Card } from "@/lib/types";
@@ -112,7 +113,8 @@ function PayBillSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30">
+    <Portal>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
       <div className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl">
         <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
 
@@ -157,5 +159,6 @@ function PayBillSheet({
         </button>
       </div>
     </div>
+    </Portal>
   );
 }

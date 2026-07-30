@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { addCategory } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
+import Portal from "@/components/Portal";
 import { ChevronDownIcon } from "@/components/icons";
 
 export type SelectOption = { id: string; name: string };
@@ -44,6 +45,7 @@ export function SelectPopup({
   }
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-6" onClick={onClose}>
       <div
         className="w-full max-w-xs rounded-3xl bg-white p-5 shadow-2xl"
@@ -111,6 +113,7 @@ export function SelectPopup({
         )}
       </div>
     </div>
+    </Portal>
   );
 }
 

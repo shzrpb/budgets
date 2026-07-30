@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { addCategory, deleteCategory, updateCategory } from "@/app/actions";
+import Portal from "@/components/Portal";
+import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Category } from "@/lib/types";
 
 const CONFIRM_TIMEOUT_MS = 3000;
@@ -37,6 +39,7 @@ function CategorySheetForm({
   onClose: () => void;
   defaultFixed?: boolean;
 }) {
+  useRegisterSheetOpen(true);
   const isEdit = !!category;
   const [name, setName] = useState(category?.name ?? "");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -67,7 +70,8 @@ function CategorySheetForm({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/30">
+    <Portal>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/40">
       <div className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl">
         <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
         <div className="flex items-center justify-between">
@@ -110,5 +114,6 @@ function CategorySheetForm({
         )}
       </div>
     </div>
+    </Portal>
   );
 }

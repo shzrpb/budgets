@@ -3,6 +3,7 @@ import { Fira_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import ScrollContainer from "@/components/ScrollContainer";
 import TopNav from "@/components/TopNav";
+import ViewportHeightSync from "@/components/ViewportHeightSync";
 
 const firaMono = Fira_Mono({
   variable: "--font-fira-mono",
@@ -41,7 +42,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${firaMono.variable} ${inter.variable} h-full antialiased`}>
-      <body className="flex h-dvh flex-col overflow-hidden text-stone-900">
+      <body className="flex h-[var(--app-height,100dvh)] flex-col overflow-hidden text-stone-900">
+        <ViewportHeightSync />
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
           <ScrollContainer>{children}</ScrollContainer>
           <TopNav />

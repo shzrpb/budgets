@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { addTransaction, updateTransaction } from "@/app/actions";
+import Portal from "@/components/Portal";
 import { Dashes, SelectPopup, SelectRow, type SelectOption } from "@/components/ReceiptControls";
 import { useAnySheetOpen, useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Account, Card, Category, PaymentMethod, Transaction, TransactionType } from "@/lib/types";
@@ -64,7 +65,6 @@ export default function AddTransactionSheet({
   transactionCount?: number;
 }) {
   const [open, setOpen] = useState(false);
-  useRegisterSheetOpen(open);
   const anySheetOpen = useAnySheetOpen();
 
   return (
@@ -156,6 +156,7 @@ function Receipt({
   transactionCount: number;
   onClose: () => void;
 }) {
+  useRegisterSheetOpen(true);
   const isEdit = !!transaction;
   const [type, setType] = useState<TransactionType>(transaction?.type ?? "spend");
   const [amount, setAmount] = useState(transaction?.amount.toString() ?? "");
@@ -233,6 +234,7 @@ function Receipt({
   const receiptNo = pad(transactionCount + 1, 5);
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div style={{ filter: "drop-shadow(0 14px 28px rgba(0,0,0,0.22))" }} className="w-full max-w-sm">
         <div
@@ -397,5 +399,6 @@ function Receipt({
         />
       )}
     </div>
+    </Portal>
   );
 }

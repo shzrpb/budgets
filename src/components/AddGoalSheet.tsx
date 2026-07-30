@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { upsertGoal } from "@/app/actions";
+import Portal from "@/components/Portal";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import { useVisualViewportInsets } from "@/lib/useVisualViewport";
 import type { Goal } from "@/lib/types";
@@ -45,6 +46,7 @@ export default function AddGoalSheet({
       </button>
 
       {open && (
+        <Portal>
         <div className="fixed inset-0 z-50 bg-black/40">
           <div
             className="fixed inset-x-0 flex items-center justify-center p-4"
@@ -96,6 +98,7 @@ export default function AddGoalSheet({
             </div>
           </div>
         </div>
+        </Portal>
       )}
     </>
   );

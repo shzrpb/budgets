@@ -3,6 +3,7 @@
 :root {
   --background: #fafafa;
   --foreground: #292524;
+  --app-height: 100dvh;
 
   --mesh-bg:
     radial-gradient(125% 100% at 0%   0%,   #FCF4EE 0%,

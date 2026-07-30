@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { addCard, updateCard } from "@/app/actions";
+import Portal from "@/components/Portal";
 import { PlusIcon } from "@/components/icons";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import { useVisualViewportInsets } from "@/lib/useVisualViewport";
@@ -61,6 +62,7 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
   }
 
   return (
+    <Portal>
     <div className="fixed inset-0 z-50 bg-black/40">
       <div
         className="fixed inset-x-0 flex items-center justify-center p-4"
@@ -137,5 +139,6 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
       </div>
       </div>
     </div>
+    </Portal>
   );
 }

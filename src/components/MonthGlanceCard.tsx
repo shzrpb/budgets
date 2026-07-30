@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import CategoryPill from "@/components/CategoryPill";
+import Portal from "@/components/Portal";
 import { formatMoney } from "@/lib/format";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Card, Category, Transaction } from "@/lib/types";
@@ -187,7 +188,8 @@ function BreakdownSheet({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30" onClick={onClose}>
+    <Portal>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={onClose}>
       <div
         className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl"
         onClick={(e) => e.stopPropagation()}
@@ -212,5 +214,6 @@ function BreakdownSheet({
         </div>
       </div>
     </div>
+    </Portal>
   );
 }
