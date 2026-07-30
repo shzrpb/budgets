@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { upsertGoal } from "@/app/actions";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
+import { useVisualViewportInsets } from "@/lib/useVisualViewport";
 import type { Goal } from "@/lib/types";
 
 export default function AddGoalSheet({
@@ -18,6 +19,7 @@ export default function AddGoalSheet({
 }) {
   const [open, setOpen] = useState(false);
   useRegisterSheetOpen(open);
+  const { height: viewportHeight, top: viewportTop } = useVisualViewportInsets();
   const [targetAmount, setTargetAmount] = useState(goal?.target_amount.toString() ?? "");
   const [targetDate, setTargetDate] = useState(goal?.target_date ?? "");
   const [isPending, startTransition] = useTransition();
@@ -43,47 +45,55 @@ export default function AddGoalSheet({
       </button>
 
       {open && (
-        <div className="pointer-events-auto fixed inset-0 z-50 flex items-end justify-center bg-black/30">
-          <div className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl">
-            <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
-            <div className="flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-black/40">
+          <div
+            className="fixed inset-x-0 flex items-center justify-center p-4"
+            style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
+          >
+            <div className="flex max-h-full w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
               <p className="text-sm font-semibold text-stone-800">
                 {title ?? (goal ? "Edit goal" : "Add a goal")}
               </p>
-              <button type="button" onClick={() => setOpen(false)} className="text-sm text-stone-400">
-                Cancel
-              </button>
-            </div>
 
-            <p className="mt-4 text-xs font-medium text-stone-400">Target amount</p>
-            <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
-              <span className="text-stone-400">$</span>
+              <p className="mt-4 text-xs font-medium text-stone-400">Target amount</p>
+              <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+                <span className="text-stone-400">$</span>
+                <input
+                  autoFocus
+                  inputMode="decimal"
+                  value={targetAmount}
+                  onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+                  placeholder="0.00"
+                  className="ml-1 w-full bg-transparent text-sm outline-none"
+                />
+              </div>
+
+              <p className="mt-4 text-xs font-medium text-stone-400">Target date (optional)</p>
               <input
-                autoFocus
-                inputMode="decimal"
-                value={targetAmount}
-                onChange={(e) => setTargetAmount(e.target.value.replace(/[^0-9.]/g, ""))}
-                placeholder="0.00"
-                className="ml-1 w-full bg-transparent text-sm outline-none"
+                type="date"
+                value={targetDate ?? ""}
+                onChange={(e) => setTargetDate(e.target.value)}
+                className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
               />
+
+              <div className="mt-5 grid grid-cols-5 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="col-span-2 rounded-2xl bg-stone-100 py-3.5 text-sm font-medium text-stone-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={!canSave || isPending}
+                  onClick={handleSave}
+                  className="col-span-3 rounded-2xl bg-stone-900 py-3.5 text-sm font-medium text-white transition-colors disabled:opacity-40"
+                >
+                  {isPending ? "Saving…" : "Save goal"}
+                </button>
+              </div>
             </div>
-
-            <p className="mt-4 text-xs font-medium text-stone-400">Target date (optional)</p>
-            <input
-              type="date"
-              value={targetDate ?? ""}
-              onChange={(e) => setTargetDate(e.target.value)}
-              className="mt-2 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
-            />
-
-            <button
-              type="button"
-              disabled={!canSave || isPending}
-              onClick={handleSave}
-              className="mt-5 w-full rounded-2xl bg-stone-900 py-3.5 text-sm font-medium text-white transition-colors disabled:opacity-40"
-            >
-              {isPending ? "Saving…" : "Save goal"}
-            </button>
           </div>
         </div>
       )}

@@ -35,15 +35,14 @@
   --font-mono: var(--font-fira-mono);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-}
-
 /*
  * Three-tier surface system.
  *
- * Background: --mesh-bg on the scroll container (.mesh-surface below).
+ * Background: --mesh-bg painted once on body, sized to the viewport. Every
+ *             app surface (including the scrollable .mesh-surface content
+ *             area, the status-bar safe-area padding, and the bottom nav)
+ *             sits on top of this single layer instead of repainting their
+ *             own copy, so there's no seam or size mismatch between them.
  * Hero:       .hero — filters a saturated slice of the mesh out of its own
  *             backdrop. No background fill of its own; tint comes from
  *             wherever it sits on screen, not from anything it contains.
@@ -51,29 +50,15 @@ body {
  *             alerts, list items, sheets, and modals. Never filtered.
  */
 
-.mesh-surface {
-  position: relative;
+body {
   background: var(--mesh-bg);
-  background-attachment: local;
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  /* Exclude the safe-area-inset-top padding from this element's own paint so
-     the viewport-accurate .mesh-bg-fixed layer behind it shows through there
-     instead — this box's background-size resolves against its scrollable
-     content height, not the viewport, so it can't be trusted for that strip. */
-  background-origin: content-box;
+  color: var(--foreground);
 }
 
-/*
- * Same mesh, viewport-sized rather than scroll-content-sized. Sits behind
- * the whole app column (including the chrome above/below the scrollable
- * .mesh-surface, like the bottom nav) so nothing outside the scroll area
- * reads as a flat, unrelated header/footer bar.
- */
-.mesh-bg-fixed {
-  background: var(--mesh-bg);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+.mesh-surface {
+  position: relative;
 }
 
 /* Grain to break up 8-bit banding across the mesh's very narrow colour range.
