@@ -6,6 +6,7 @@ import FixedSheet from "@/components/FixedSheet";
 import SwipeActions from "@/components/SwipeActions";
 import TransactionIcon from "@/components/TransactionIcon";
 import { editDeleteActions } from "@/components/rowActions";
+import { formatMoney } from "@/lib/format";
 import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types";
 
 const CADENCE_STYLES: Record<string, string> = {
@@ -239,7 +240,7 @@ export function FixedRow({
 
   return (
     <div
-      className="rounded-2xl bg-white shadow-sm"
+      className="surface-card"
       onClick={onToggleDetail}
       role={onToggleDetail ? "button" : undefined}
       aria-expanded={onToggleDetail ? detailOpen : undefined}
@@ -252,7 +253,7 @@ export function FixedRow({
           >
             <TransactionIcon name={category?.name} isIncome={transaction.type === "income"} />
           </span>
-          <p className="text-sm font-medium text-stone-800">
+          <p className="text-sm font-medium text-[var(--text-primary)]">
             {transaction.type === "income" ? "Income" : category?.name ?? "Uncategorized"}
             <span
               className={`ml-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
@@ -265,11 +266,10 @@ export function FixedRow({
         </div>
         <div className="flex items-center gap-2">
           <p
-            className={`text-sm font-semibold ${
-              transaction.type === "income" ? "text-emerald-600" : "text-stone-900"
-            }`}
+            className="font-mono text-sm font-semibold"
+            style={{ color: transaction.type === "income" ? "var(--text-success)" : "var(--text-primary)" }}
           >
-            {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
+            {transaction.type === "income" ? "+" : "-"}${formatMoney(transaction.amount)}
           </p>
           {onHandlePointerDown && (
             <span
@@ -314,7 +314,7 @@ export function FixedRow({
               {lineItems.map((item) => (
                 <div key={item.id} className="flex items-center justify-between text-xs">
                   <span className="text-stone-500">{item.name}</span>
-                  <span className="font-mono text-stone-700">${item.amount.toLocaleString()}</span>
+                  <span className="font-mono text-stone-700">${formatMoney(item.amount)}</span>
                 </div>
               ))}
             </div>

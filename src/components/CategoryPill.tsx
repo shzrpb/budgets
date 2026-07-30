@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { formatMoney } from "@/lib/format";
 
 const LONG_PRESS_MS = 450;
 const MOVE_CANCEL_PX = 10;
@@ -28,7 +29,7 @@ export default function CategoryPill({
       <span className="font-medium">{name}</span>
       {amount !== undefined && (
         <span className={`font-mono ${selected ? "text-stone-300" : "text-stone-500"}`}>
-          ${amount.toLocaleString()}
+          ${formatMoney(amount)}
         </span>
       )}
     </>

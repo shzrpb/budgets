@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { daysUntil, formatDueDate, nextDueDate } from "@/lib/cards";
 import { payCardBill } from "@/app/actions";
 import CategoryPill from "@/components/CategoryPill";
+import { formatMoney } from "@/lib/format";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Account, Card } from "@/lib/types";
 
@@ -46,29 +47,34 @@ export default function CardDueReminder({
 
   return (
     <div className="flex flex-col gap-2">
-      {dueSoon.map(({ card, due, days, outstanding }) => (
-        <div
-          key={card.id}
-          className="flex items-center gap-2.5 rounded-2xl bg-gradient-to-br from-orange-50 to-red-50 px-4 py-3 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60"
-        >
-          <span className="h-2 w-2 shrink-0 rounded-full bg-orange-600" />
-          <div className="flex-1 text-xs text-orange-700">
-            <p>
-              <span className="font-medium">{card.name}</span> bill {dueLabel(days)}
-            </p>
-            <p className="font-mono text-orange-600/70">
-              {formatDueDate(due)} · ${outstanding.toLocaleString()}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setPaying(card)}
-            className="shrink-0 rounded-full bg-orange-600 px-3 py-1 text-xs font-semibold text-white"
+      {dueSoon.map(({ card, due, days, outstanding }) => {
+        const overdue = days < 0;
+        const tone = overdue ? "var(--text-danger)" : "var(--text-warning)";
+        return (
+          <div
+            key={card.id}
+            className="surface-card flex items-center gap-2.5 px-4 py-3"
           >
-            Mark paid
-          </button>
-        </div>
-      ))}
+            <span className="alert-dot" style={{ backgroundColor: tone }} />
+            <div className="flex-1 text-xs" style={{ color: tone }}>
+              <p>
+                <span className="font-medium">{card.name}</span> bill {dueLabel(days)}
+              </p>
+              <p className="font-mono opacity-80">
+                {formatDueDate(due)} · ${formatMoney(outstanding)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPaying(card)}
+              className="shrink-0 rounded-full border px-3 py-1 text-xs font-semibold"
+              style={{ color: tone, borderColor: `color-mix(in srgb, ${tone} 40%, transparent)` }}
+            >
+              Mark paid
+            </button>
+          </div>
+        );
+      })}
 
       {paying && (
         <PayBillSheet
@@ -118,7 +124,7 @@ function PayBillSheet({
         </div>
 
         <p className="mt-4 text-center font-mono text-3xl font-semibold tracking-tight">
-          ${amount.toLocaleString()}
+          ${formatMoney(amount)}
         </p>
 
         {accounts.length > 0 ? (

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import CategoryPill from "@/components/CategoryPill";
+import { formatMoney } from "@/lib/format";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Card, Category, Transaction } from "@/lib/types";
 
@@ -14,12 +15,12 @@ const ROW_GAP = 8;
 const ROW_WIDTH = 300;
 
 function fmtAbs(n: number): string {
-  return Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  return formatMoney(Math.abs(n));
 }
 
 /** Rough pixel width of a category chip, from its text length — good enough for packing, not pixel-perfect. */
 function estimateChipWidth(name: string, amount: number): number {
-  return 30 + name.length * 7.2 + amount.toLocaleString().length * 7.5;
+  return 30 + name.length * 7.2 + formatMoney(amount).length * 7.5;
 }
 
 type CategoryTotal = { category: Category; amount: number };
@@ -114,30 +115,33 @@ export default function MonthGlanceCard({
   const hiddenCount = categoryTotals.length - visible.length;
 
   return (
-    <div className="flex flex-col rounded-3xl bg-gradient-to-br from-amber-50 to-green-50 p-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
+    <div className="hero flex flex-col p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-stone-700">
+        <p className="text-sm font-medium text-[var(--text-primary)]">
           {MONTH_LABEL.format(now)} at a glance
         </p>
-        <p className="font-mono text-xs text-stone-400">
-          ${spent.toLocaleString()} / {monthlyBudget.toLocaleString()}
+        <p className="font-mono text-xs text-[var(--text-muted)]">
+          ${formatMoney(spent)} / {formatMoney(monthlyBudget)}
         </p>
       </div>
       <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-stone-200">
         <div
-          className={`h-full rounded-full transition-all ${nearLimit ? "bg-amber-400" : "bg-stone-400"}`}
-          style={{ width: `${progress * 100}%` }}
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${progress * 100}%`,
+            backgroundColor: nearLimit ? "var(--text-warning)" : "var(--text-secondary)",
+          }}
         />
       </div>
-      <p className="mt-1.5 text-xs text-stone-400">
+      <p className="mt-1.5 text-xs text-[var(--text-muted)]">
         <span className="font-mono">${fmtAbs(remaining)}</span> {remaining >= 0 ? "left" : "over"}
         {" · "}
         <span className="font-mono">{daysLeft}</span> day{daysLeft === 1 ? "" : "s"} to go
       </p>
 
       {overLimitCards.length > 0 && (
-        <p className="mt-3 text-xs font-medium text-red-500">
-          ⚠ Over limit: {overLimitCards.map((c) => c.name).join(", ")}
+        <p className="mt-3 text-xs font-medium text-[var(--text-danger)]">
+          Over limit: {overLimitCards.map((c) => c.name).join(", ")}
         </p>
       )}
 
@@ -202,7 +206,7 @@ function BreakdownSheet({
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: category.color }} />
                 <p className="text-sm text-stone-700">{category.name}</p>
               </div>
-              <p className="font-mono text-sm text-stone-800">${amount.toLocaleString()}</p>
+              <p className="font-mono text-sm text-stone-800">${formatMoney(amount)}</p>
             </div>
           ))}
         </div>

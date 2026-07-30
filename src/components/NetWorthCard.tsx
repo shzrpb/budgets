@@ -1,5 +1,6 @@
 import TrendChart from "@/components/TrendChart";
 import AddGoalSheet from "@/components/AddGoalSheet";
+import { formatMoney } from "@/lib/format";
 import type { TrendPoint } from "@/lib/networth";
 import type { Goal } from "@/lib/types";
 
@@ -8,9 +9,7 @@ function monthsUntil(target: Date, from: Date): number {
   return Math.max(1, months);
 }
 
-function fmt(n: number): string {
-  return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
-}
+const fmt = formatMoney;
 
 export default function NetWorthCard({
   netWorth,
@@ -25,17 +24,20 @@ export default function NetWorthCard({
   goal: Goal | null;
 }) {
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-orange-50 to-violet-50 p-4 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
-      <p className="text-sm text-stone-500">Net worth</p>
+    <div className="hero p-4">
+      <p className="text-sm text-[var(--text-secondary)]">Net worth</p>
       <div className="mt-1 flex items-baseline gap-2">
-        <p className="font-mono text-3xl font-semibold tracking-tight">${fmt(netWorth)}</p>
+        <p className="font-mono text-3xl font-semibold tracking-tight text-[var(--text-primary)]">${fmt(netWorth)}</p>
         {change30d !== null && (
-          <p className={`font-mono text-sm font-medium ${change30d >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+          <p
+            className="font-mono text-sm font-medium"
+            style={{ color: change30d >= 0 ? "var(--text-success)" : "var(--text-danger)" }}
+          >
             {change30d >= 0 ? "+" : "-"}${fmt(Math.abs(change30d))}
           </p>
         )}
       </div>
-      {change30d !== null && <p className="text-xs text-stone-400">Last 30 days</p>}
+      {change30d !== null && <p className="text-xs text-[var(--text-muted)]">Last 30 days</p>}
       <div className="mt-2">
         <TrendChart data={series} color="#57534e" height={72} />
       </div>
@@ -59,11 +61,11 @@ function GoalSection({
       <AddGoalSheet
         goal={null}
         title="Set your net worth goal"
-        triggerClassName="mt-4 block w-full border-t border-stone-200/70 pt-4 text-left"
+        triggerClassName="mt-4 block w-full border-t border-[var(--border-hairline)] pt-4 text-left"
         trigger={
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-[var(--text-secondary)]">
             No overall net worth goal yet.{" "}
-            <span className="font-medium text-stone-800">Tap to set one →</span>
+            <span className="font-medium text-[var(--text-primary)]">Tap to set one →</span>
           </p>
         }
       />
@@ -93,27 +95,30 @@ function GoalSection({
     <AddGoalSheet
       goal={goal}
       title="Edit net worth goal"
-      triggerClassName="mt-4 block w-full border-t border-stone-200/70 pt-4 text-left"
+      triggerClassName="mt-4 block w-full border-t border-[var(--border-hairline)] pt-4 text-left"
       trigger={
         <div>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-stone-500">
-              Goal <span className="font-mono text-stone-700">${fmt(goal.target_amount)}</span>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Goal <span className="font-mono text-[var(--text-primary)]">${fmt(goal.target_amount)}</span>
               {dateLabel && <span> · {dateLabel}</span>}
             </p>
             {recentMonthlyChange !== null && (
-              <p className={`text-xs font-medium ${onTrack ? "text-emerald-600" : "text-amber-600"}`}>
+              <p
+                className="text-xs font-medium"
+                style={{ color: onTrack ? "var(--text-success)" : "var(--text-warning)" }}
+              >
                 {onTrack ? "On track" : "Behind pace"}
               </p>
             )}
           </div>
           <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-stone-100">
             <div
-              className="h-full rounded-full bg-emerald-500 transition-all"
-              style={{ width: `${progress * 100}%` }}
+              className="h-full rounded-full transition-all"
+              style={{ width: `${progress * 100}%`, backgroundColor: "var(--text-success)" }}
             />
           </div>
-          <p className="mt-1.5 text-xs text-stone-400">
+          <p className="mt-1.5 text-xs text-[var(--text-muted)]">
             <span className="font-mono">{Math.round(progress * 100)}%</span> there
             {monthsLeft && paceNeeded > 0 && (
               <>

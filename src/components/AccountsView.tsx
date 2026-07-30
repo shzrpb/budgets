@@ -26,7 +26,6 @@ export default function AccountsView({
               account={account}
               series={accountSeries[i]}
               lastThreeMonths={accountLastThreeMonths[i]}
-              index={i}
             />
           ))}
         </div>

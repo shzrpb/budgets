@@ -17,13 +17,8 @@ export default function CardsView({
         </p>
       ) : (
         <div className="flex flex-col gap-3">
-          {cards.map((card, i) => (
-            <CardItem
-              key={card.id}
-              card={card}
-              monthSpend={cardMonthSpend.get(card.id) ?? 0}
-              index={i}
-            />
+          {cards.map((card) => (
+            <CardItem key={card.id} card={card} monthSpend={cardMonthSpend.get(card.id) ?? 0} />
           ))}
         </div>
       )}

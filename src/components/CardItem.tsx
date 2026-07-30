@@ -5,6 +5,7 @@ import { deleteCard, updateCardMaxSpend } from "@/app/actions";
 import { EditCardSheet } from "@/components/AddCardSheet";
 import SwipeActions from "@/components/SwipeActions";
 import { editDeleteActions } from "@/components/rowActions";
+import { formatMoney } from "@/lib/format";
 import type { Card } from "@/lib/types";
 
 function ordinal(day: number): string {
@@ -12,23 +13,12 @@ function ordinal(day: number): string {
   return `${day}${suffix}`;
 }
 
-/** Peach-lavender, blue-mint, yellow-green, pink-sky, lilac-peach. */
-const TINTS = [
-  "from-orange-50 to-violet-50",
-  "from-sky-50 to-teal-50",
-  "from-amber-50 to-green-50",
-  "from-rose-50 to-sky-50",
-  "from-violet-50 to-orange-50",
-];
-
 export default function CardItem({
   card,
   monthSpend,
-  index = 0,
 }: {
   card: Card;
   monthSpend: number;
-  index?: number;
 }) {
   const [editing, setEditing] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -58,23 +48,21 @@ export default function CardItem({
           deleteLabel: "Delete card",
         })}
       >
-        <div
-          className={`rounded-3xl bg-gradient-to-br ${TINTS[index % TINTS.length]} p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60`}
-        >
-          <p className="text-sm font-medium text-stone-800">{card.name}</p>
+        <div className="surface-card p-5">
+          <p className="text-sm font-medium text-[var(--text-primary)]">{card.name}</p>
 
-          {card.note && <p className="mt-2 text-xs text-stone-400">{card.note}</p>}
+          {card.note && <p className="mt-2 text-xs text-[var(--text-muted)]">{card.note}</p>}
           {card.bill_due_day != null && (
-            <p className="mt-1 text-xs text-stone-400">
+            <p className="mt-1 text-xs text-[var(--text-muted)]">
               Bill due on the {ordinal(card.bill_due_day)}
             </p>
           )}
 
-          <div className="mt-3 flex items-center justify-between text-xs text-stone-500">
-            <span>This month: ${monthSpend.toLocaleString()}</span>
+          <div className="mt-3 flex items-center justify-between text-xs text-[var(--text-secondary)]">
+            <span className="font-mono">This month: ${formatMoney(monthSpend)}</span>
             {editing ? (
               <div className="flex items-center gap-1">
-                <span className="text-stone-400">$</span>
+                <span className="text-[var(--text-muted)]">$</span>
                 <input
                   autoFocus
                   inputMode="decimal"
@@ -94,9 +82,9 @@ export default function CardItem({
                   setEditing(true);
                 }}
                 disabled={isPending}
-                className="font-medium text-stone-700"
+                className="font-mono font-medium text-[var(--text-primary)]"
               >
-                {card.max_spend != null ? `Limit: $${card.max_spend.toLocaleString()}` : "Set limit"}
+                {card.max_spend != null ? `Limit: $${formatMoney(card.max_spend)}` : "Set limit"}
               </button>
             )}
           </div>
@@ -104,15 +92,15 @@ export default function CardItem({
           {card.max_spend != null && (
             <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-stone-100">
               <div
-                className={`h-full rounded-full transition-all ${over ? "bg-red-400" : "bg-stone-800"}`}
-                style={{ width: `${progress * 100}%` }}
+                className="h-full rounded-full transition-all"
+                style={{ width: `${progress * 100}%`, backgroundColor: over ? "var(--text-danger)" : "var(--text-primary)" }}
               />
             </div>
           )}
 
           {over && (
-            <p className="mt-2 text-xs font-medium text-red-500">
-              ⚠ Over your ${card.max_spend!.toLocaleString()} limit this month
+            <p className="mt-2 text-xs font-medium text-[var(--text-danger)]">
+              Over your ${formatMoney(card.max_spend!)} limit this month
             </p>
           )}
         </div>

@@ -35,7 +35,7 @@ export default function RootLayout({
     <html lang="en" className={`${firaMono.variable} ${inter.variable} h-full antialiased`}>
       <body className="flex h-dvh flex-col overflow-hidden bg-stone-50 text-stone-900">
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
-          <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+          <main className="mesh-surface min-h-0 flex-1 overflow-y-auto">{children}</main>
           <TopNav />
         </div>
       </body>

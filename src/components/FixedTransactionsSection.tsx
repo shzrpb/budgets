@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import FixedSheet from "@/components/FixedSheet";
 import FixedTransactionList from "@/components/FixedTransactionList";
 import { PlusIcon } from "@/components/icons";
+import { formatMoney } from "@/lib/format";
 import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types";
 
 /** How much of each covered card peeks out in the collapsed stack. */
@@ -68,10 +69,10 @@ export default function FixedTransactionsSection({
     <div>
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-baseline gap-2">
-          <p className="text-sm font-medium text-stone-500">Fixed transactions</p>
+          <p className="text-sm font-medium text-[var(--text-secondary)]">Fixed transactions</p>
           {transactions.length > 0 && (
-            <p className="text-xs text-stone-400">
-              {net >= 0 ? "+" : "−"}${Math.abs(Math.round(net)).toLocaleString()}/mo
+            <p className="font-mono text-xs text-[var(--text-muted)]">
+              {net >= 0 ? "+" : "−"}${formatMoney(Math.abs(net))}/mo
             </p>
           )}
         </div>
@@ -86,7 +87,7 @@ export default function FixedTransactionsSection({
       </div>
 
       {transactions.length === 0 ? (
-        <p className="rounded-2xl bg-white px-4 py-5 text-center text-sm text-stone-400 shadow-sm">
+        <p className="surface-card px-4 py-5 text-center text-sm text-[var(--text-muted)]">
           Nothing fixed yet — rent, salary, subscriptions.
         </p>
       ) : expanded ? (
@@ -104,14 +105,17 @@ export default function FixedTransactionsSection({
           type="button"
           onClick={handleStackTap}
           aria-label="Show fixed transaction previews"
-          className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3.5 text-left shadow-sm"
+          className="surface-card flex w-full items-center justify-between px-4 py-3.5 text-left"
           style={{ height: ROW_HEIGHT }}
         >
-          <p className="text-sm font-medium text-stone-800">
+          <p className="text-sm font-medium text-[var(--text-primary)]">
             {transactions.length} fixed item{transactions.length === 1 ? "" : "s"}
           </p>
-          <p className={`text-sm font-semibold ${net >= 0 ? "text-emerald-600" : "text-stone-900"}`}>
-            {net >= 0 ? "+" : "−"}${Math.abs(Math.round(net)).toLocaleString()}/mo
+          <p
+            className="font-mono text-sm font-semibold"
+            style={{ color: net >= 0 ? "var(--text-success)" : "var(--text-primary)" }}
+          >
+            {net >= 0 ? "+" : "−"}${formatMoney(Math.abs(net))}/mo
           </p>
         </button>
       ) : (
@@ -133,7 +137,7 @@ export default function FixedTransactionsSection({
             return (
               <div
                 key={t.id}
-                className={`absolute inset-x-0 flex items-center justify-between gap-3 rounded-2xl bg-white px-4 shadow-sm ${
+                className={`surface-card absolute inset-x-0 flex items-center justify-between gap-3 px-4 ${
                   isLast ? "py-3.5" : "pt-2 pb-6"
                 }`}
                 style={{ top: i * PEEK_HEIGHT, zIndex: i, height: ROW_HEIGHT }}
@@ -143,7 +147,7 @@ export default function FixedTransactionsSection({
                     className="h-2 w-2 shrink-0 rounded-full"
                     style={{ backgroundColor: dotColor }}
                   />
-                  <p className="truncate text-sm font-medium text-stone-800">
+                  <p className="truncate text-sm font-medium text-[var(--text-primary)]">
                     {t.type === "income" ? "Income" : category?.name ?? "Uncategorized"}
                     <span
                       className={`ml-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${
@@ -155,11 +159,10 @@ export default function FixedTransactionsSection({
                   </p>
                 </div>
                 <p
-                  className={`shrink-0 text-sm font-semibold ${
-                    t.type === "income" ? "text-emerald-600" : "text-stone-900"
-                  }`}
+                  className="shrink-0 font-mono text-sm font-semibold"
+                  style={{ color: t.type === "income" ? "var(--text-success)" : "var(--text-primary)" }}
                 >
-                  {t.type === "income" ? "+" : "-"}${t.amount.toLocaleString()}
+                  {t.type === "income" ? "+" : "-"}${formatMoney(t.amount)}
                 </p>
               </div>
             );

@@ -3,6 +3,29 @@
 :root {
   --background: #fafafa;
   --foreground: #292524;
+
+  --mesh-bg:
+    radial-gradient(125% 100% at 0%   0%,   #FCF4EE 0%,
+      rgba(252,244,238,0.62) 34%, rgba(252,244,238,0.22) 62%, rgba(252,244,238,0) 88%),
+    radial-gradient(125% 100% at 100% 0%,   #F5FAFE 0%,
+      rgba(245,250,254,0.62) 34%, rgba(245,250,254,0.22) 62%, rgba(245,250,254,0) 88%),
+    radial-gradient(125% 100% at 0%   100%, #FAFCF2 0%,
+      rgba(250,252,242,0.62) 34%, rgba(250,252,242,0.22) 62%, rgba(250,252,242,0) 88%),
+    radial-gradient(125% 100% at 100% 100%, #F5FCF8 0%,
+      rgba(245,252,248,0.62) 34%, rgba(245,252,248,0.22) 62%, rgba(245,252,248,0) 88%),
+    #FFFFFF;
+  --mesh-hero-filter: saturate(2.1) brightness(0.96);
+  --surface-card: #FFFFFF;
+  --border-hairline: rgba(140,135,130,0.14);
+  --rim-highlight: inset 0 1px 1.5px rgba(255,255,255,0.7);
+  --text-primary: #33302E;
+  --text-secondary: #77716C;
+  --text-muted: #8B857F;
+  --text-danger: #A32D2D;
+  --text-warning: #92580E;
+  --text-success: #4A6A46;
+  --radius-hero: 18px;
+  --radius-card: 14px;
 }
 
 @theme inline {
@@ -15,6 +38,66 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/*
+ * Three-tier surface system.
+ *
+ * Background: --mesh-bg on the scroll container (.mesh-surface below).
+ * Hero:       .hero — filters a saturated slice of the mesh out of its own
+ *             backdrop. No background fill of its own; tint comes from
+ *             wherever it sits on screen, not from anything it contains.
+ * Card:       .surface-card — solid white, hairline border. Used by rows,
+ *             alerts, list items, sheets, and modals. Never filtered.
+ */
+
+.mesh-surface {
+  position: relative;
+  background: var(--mesh-bg);
+  background-attachment: local;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* Grain to break up 8-bit banding across the mesh's very narrow colour range.
+   Viewport-fixed since noise carries no positional meaning. */
+.mesh-surface::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+}
+
+.hero {
+  position: relative;
+  border-radius: var(--radius-hero);
+  backdrop-filter: var(--mesh-hero-filter);
+  -webkit-backdrop-filter: var(--mesh-hero-filter);
+  border: 1px solid rgba(160,145,130,0.20);
+  box-shadow: var(--rim-highlight);
+}
+
+@supports not (backdrop-filter: saturate(2)) {
+  .hero {
+    background: linear-gradient(135deg, #FCF6F2, #F5FAFE);
+  }
+}
+
+.surface-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-card);
+}
+
+.alert-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
 }
 
 /* Hide number input spinners so amount fields look clean */

@@ -7,6 +7,7 @@ import FixedTransactionsSection from "@/components/FixedTransactionsSection";
 import SwipeActions from "@/components/SwipeActions";
 import TransactionIcon from "@/components/TransactionIcon";
 import { editDeleteActions } from "@/components/rowActions";
+import { formatMoney } from "@/lib/format";
 import type { Account, Card, Category, LineItem, Transaction } from "@/lib/types";
 
 const DAY_LABEL = new Intl.DateTimeFormat("en", {
@@ -120,7 +121,7 @@ function Row({
           onDelete: () => startTransition(() => deleteTransaction(transaction.id)),
         })}
       >
-        <div className="flex items-center justify-between gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
+        <div className="surface-card flex items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
             <span
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
@@ -129,16 +130,15 @@ function Row({
               <TransactionIcon name={category?.name} isIncome={transaction.type === "income"} />
             </span>
             <div>
-              <p className="text-sm font-medium text-stone-800">{title}</p>
-              <p className="text-xs text-stone-400">{subtitle}</p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
+              <p className="text-xs text-[var(--text-muted)]">{subtitle}</p>
             </div>
           </div>
           <p
-            className={`text-sm font-semibold ${
-              transaction.type === "income" ? "text-emerald-600" : "text-stone-900"
-            }`}
+            className="font-mono text-sm font-semibold"
+            style={{ color: transaction.type === "income" ? "var(--text-success)" : "var(--text-primary)" }}
           >
-            {transaction.type === "income" ? "+" : "-"}${transaction.amount.toLocaleString()}
+            {transaction.type === "income" ? "+" : "-"}${formatMoney(transaction.amount)}
           </p>
         </div>
       </SwipeActions>

@@ -1,6 +1,7 @@
 import { getCards, getMonthTransactions } from "@/lib/data";
 import CardsView from "@/components/CardsView";
 import PageHeader from "@/components/PageHeader";
+import { formatMoney } from "@/lib/format";
 
 export default async function CardsPage() {
   const [cards, monthTransactions] = await Promise.all([getCards(), getMonthTransactions()]);
@@ -17,8 +18,9 @@ export default async function CardsPage() {
     <div className="flex flex-col gap-4 px-4 pt-6">
       <PageHeader title="Cards" />
 
-      <p className="pl-2 text-sm text-stone-500">
-        Total spent: <span className="font-medium text-stone-800">${totalSpent.toLocaleString()}</span>
+      <p className="pl-2 text-sm text-[var(--text-secondary)]">
+        Total spent:{" "}
+        <span className="font-mono font-medium text-[var(--text-primary)]">${formatMoney(totalSpent)}</span>
       </p>
 
       <CardsView cards={cards} cardMonthSpend={cardMonthSpend} />

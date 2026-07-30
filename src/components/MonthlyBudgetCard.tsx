@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { updateMonthlyBudget } from "@/app/actions";
+import { formatMoney } from "@/lib/format";
 
 function fmtAbs(n: number): string {
-  return Math.abs(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  return formatMoney(Math.abs(n));
 }
 
 export default function MonthlyBudgetCard({
@@ -33,13 +34,13 @@ export default function MonthlyBudgetCard({
   }
 
   return (
-    <div className="rounded-3xl bg-gradient-to-br from-rose-50 to-sky-50 p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60">
+    <div className="hero p-5">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-stone-800">Monthly budget</p>
+        <p className="text-sm font-medium text-[var(--text-primary)]">Monthly budget</p>
 
         {editing ? (
           <div className="flex items-center gap-1">
-            <span className="text-stone-400">$</span>
+            <span className="text-[var(--text-muted)]">$</span>
             <input
               autoFocus
               inputMode="decimal"
@@ -47,7 +48,7 @@ export default function MonthlyBudgetCard({
               onChange={(e) => setDraft(e.target.value.replace(/[^0-9.]/g, ""))}
               onBlur={save}
               onKeyDown={(e) => e.key === "Enter" && save()}
-              className="w-24 rounded-lg border border-stone-200 px-2 py-1 text-right text-sm outline-none focus:border-stone-400"
+              className="w-24 rounded-lg border border-stone-200 bg-white px-2 py-1 text-right text-sm outline-none focus:border-stone-400"
             />
           </div>
         ) : (
@@ -58,20 +59,23 @@ export default function MonthlyBudgetCard({
               setEditing(true);
             }}
             disabled={isPending}
-            className="text-lg font-semibold tracking-tight text-stone-900"
+            className="font-mono text-lg font-semibold tracking-tight text-[var(--text-primary)]"
           >
-            ${monthlyBudget.toLocaleString()}
+            ${formatMoney(monthlyBudget)}
           </button>
         )}
       </div>
 
       <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-stone-200">
         <div
-          className={`h-full rounded-full transition-all ${nearLimit ? "bg-amber-400" : "bg-stone-400"}`}
-          style={{ width: `${progress * 100}%` }}
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${progress * 100}%`,
+            backgroundColor: nearLimit ? "var(--text-warning)" : "var(--text-secondary)",
+          }}
         />
       </div>
-      <p className="mt-1.5 text-right text-xs text-stone-400">
+      <p className="mt-1.5 text-right text-xs text-[var(--text-muted)]">
         <span className="font-mono">${fmtAbs(remaining)}</span> {remaining >= 0 ? "left" : "over"}
       </p>
     </div>

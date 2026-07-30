@@ -6,28 +6,18 @@ import { EditAccountSheet } from "@/components/AddAccountSheet";
 import SwipeActions from "@/components/SwipeActions";
 import { editDeleteActions } from "@/components/rowActions";
 import TrendChart from "@/components/TrendChart";
+import { formatMoney } from "@/lib/format";
 import type { TrendPoint } from "@/lib/networth";
 import type { Account } from "@/lib/types";
-
-/** Peach-lavender, blue-mint, yellow-green, pink-sky, lilac-peach. */
-const TINTS = [
-  "from-orange-50 to-violet-50",
-  "from-sky-50 to-teal-50",
-  "from-amber-50 to-green-50",
-  "from-rose-50 to-sky-50",
-  "from-violet-50 to-orange-50",
-];
 
 export default function AccountCard({
   account,
   series,
   lastThreeMonths,
-  index = 0,
 }: {
   account: Account;
   series: TrendPoint[];
   lastThreeMonths: { label: string; value: number }[];
-  index?: number;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -55,18 +45,16 @@ export default function AccountCard({
           deleteLabel: "Delete account",
         })}
       >
-        <div
-          className={`rounded-3xl bg-gradient-to-br ${TINTS[index % TINTS.length]} p-5 shadow-[0_2px_16px_-6px_rgba(0,0,0,0.08)] ring-1 ring-inset ring-white/60`}
-        >
+        <div className="surface-card p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-stone-800">{account.name}</p>
-              <p className="text-xs capitalize text-stone-400">{account.type}</p>
+              <p className="text-sm font-medium text-[var(--text-primary)]">{account.name}</p>
+              <p className="text-xs capitalize text-[var(--text-muted)]">{account.type}</p>
             </div>
 
             {editing ? (
               <div className="flex items-center gap-1">
-                <span className="text-stone-400">$</span>
+                <span className="text-[var(--text-muted)]">$</span>
                 <input
                   autoFocus
                   inputMode="decimal"
@@ -85,9 +73,9 @@ export default function AccountCard({
                   setEditing(true);
                 }}
                 disabled={isPending}
-                className="text-lg font-semibold tracking-tight text-stone-900"
+                className="font-mono text-lg font-semibold tracking-tight text-[var(--text-primary)]"
               >
-                ${account.balance.toLocaleString()}
+                ${formatMoney(account.balance)}
               </button>
             )}
           </div>
@@ -95,7 +83,7 @@ export default function AccountCard({
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="mt-3 text-xs font-medium text-stone-400"
+            className="mt-3 text-xs font-medium text-[var(--text-muted)]"
           >
             {expanded ? "Hide trend ↑" : "Show trend ↓"}
           </button>
@@ -103,11 +91,11 @@ export default function AccountCard({
           {expanded && (
             <div className="mt-3">
               <TrendChart data={series} color={account.color} height={90} showAxis={false} />
-              <div className="mt-2 flex justify-between text-xs text-stone-500">
+              <div className="mt-2 flex justify-between text-xs text-[var(--text-secondary)]">
                 {lastThreeMonths.map((m) => (
                   <div key={m.label} className="text-center">
-                    <p className="text-stone-400">{m.label}</p>
-                    <p className="font-medium text-stone-700">${m.value.toLocaleString()}</p>
+                    <p className="text-[var(--text-muted)]">{m.label}</p>
+                    <p className="font-mono font-medium text-[var(--text-primary)]">${formatMoney(m.value)}</p>
                   </div>
                 ))}
               </div>

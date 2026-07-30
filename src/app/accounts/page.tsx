@@ -2,6 +2,7 @@ import { getAccountHistories, getAccounts } from "@/lib/data";
 import { accountTrendSeries, lastNMonthBalances } from "@/lib/networth";
 import AccountsView from "@/components/AccountsView";
 import PageHeader from "@/components/PageHeader";
+import { formatMoney } from "@/lib/format";
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();
@@ -14,8 +15,9 @@ export default async function AccountsPage() {
     <div className="flex flex-col gap-4 px-4 pt-6">
       <PageHeader title="Accounts" />
 
-      <p className="pl-2 text-sm text-stone-500">
-        Total net worth: <span className="font-medium text-stone-800">${netWorth.toLocaleString()}</span>
+      <p className="pl-2 text-sm text-[var(--text-secondary)]">
+        Total net worth:{" "}
+        <span className="font-mono font-medium text-[var(--text-primary)]">${formatMoney(netWorth)}</span>
       </p>
 
       <AccountsView
