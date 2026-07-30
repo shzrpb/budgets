@@ -18,12 +18,19 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Budgets",
   description: "A calm way to track spending, income, and net worth.",
+  appleWebApp: {
+    capable: true,
+    // Lets the mesh background paint behind the status bar instead of
+    // sitting under a solid system-drawn bar when added to the home screen.
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
   themeColor: "#faf9f7",
 };
 

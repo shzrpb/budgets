@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { addAccount, updateAccount } from "@/app/actions";
 import { PlusIcon } from "@/components/icons";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
+import { useVisualViewportInsets } from "@/lib/useVisualViewport";
 import type { Account, AccountType } from "@/lib/types";
 
 const TYPES: AccountType[] = ["checking", "savings", "investment", "cash", "credit", "other"];
@@ -40,6 +41,7 @@ export function EditAccountSheet({
 
 function AccountSheetForm({ account, onClose }: { account?: Account; onClose: () => void }) {
   useRegisterSheetOpen(true);
+  const { height: viewportHeight, top: viewportTop } = useVisualViewportInsets();
   const isEdit = !!account;
   const [name, setName] = useState(account?.name ?? "");
   const [type, setType] = useState<AccountType>(account?.type ?? "checking");
@@ -59,16 +61,14 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[85dvh] w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-stone-800">
-            {isEdit ? "Edit account" : "Add account"}
-          </p>
-          <button type="button" onClick={onClose} className="text-sm text-stone-400">
-            Cancel
-          </button>
-        </div>
+    <div
+      className="fixed inset-x-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
+    >
+      <div className="flex max-h-full w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
+        <p className="text-sm font-semibold text-stone-800">
+          {isEdit ? "Edit account" : "Add account"}
+        </p>
 
         <input
           autoFocus
@@ -110,14 +110,23 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
           />
         </div>
 
-        <button
-          type="button"
-          disabled={!canSave || isPending}
-          onClick={handleSave}
-          className="mt-5 w-full rounded-2xl bg-stone-900 py-3.5 text-sm font-medium text-white transition-colors disabled:opacity-40"
-        >
-          {isPending ? "Saving…" : isEdit ? "Save changes" : "Save account"}
-        </button>
+        <div className="mt-5 grid grid-cols-5 gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="col-span-2 rounded-2xl bg-stone-100 py-3.5 text-sm font-medium text-stone-600 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!canSave || isPending}
+            onClick={handleSave}
+            className="col-span-3 rounded-2xl bg-stone-900 py-3.5 text-sm font-medium text-white transition-colors disabled:opacity-40"
+          >
+            {isPending ? "Saving…" : isEdit ? "Save changes" : "Save account"}
+          </button>
+        </div>
       </div>
     </div>
   );

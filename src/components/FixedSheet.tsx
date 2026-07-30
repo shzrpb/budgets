@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { addLineItem, addTransaction, deleteLineItem, updateLineItem, updateTransaction } from "@/app/actions";
 import { SelectPopup, SelectRow, type SelectOption } from "@/components/ReceiptControls";
 import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
+import { useVisualViewportInsets } from "@/lib/useVisualViewport";
 import { TrashIcon } from "@/components/icons";
 import type { Account, Card, Category, LineItem, PaymentMethod, Recurrence, Transaction, TransactionType } from "@/lib/types";
 
@@ -23,6 +24,7 @@ export default function FixedSheetForm({
   onClose: () => void;
 }) {
   useRegisterSheetOpen(true);
+  const { height: viewportHeight, top: viewportTop } = useVisualViewportInsets();
 
   const isEdit = !!transaction;
   const fixedCategories = categories.filter((c) => c.is_fixed);
@@ -159,8 +161,11 @@ export default function FixedSheetForm({
   const accountOrCardSelectedId = paymentMethod === "credit" ? cardId : accountId;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[85dvh] w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
+    <div
+      className="fixed inset-x-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
+    >
+      <div className="flex max-h-full w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
         <p className="text-sm font-semibold text-stone-800">
           {isEdit ? "Edit fixed spend or income" : "Add fixed spend or income"}
         </p>

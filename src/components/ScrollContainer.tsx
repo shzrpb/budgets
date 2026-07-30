@@ -8,7 +8,10 @@ export default function ScrollContainer({ children }: { children: React.ReactNod
   const sheetOpen = useAnySheetOpen();
 
   return (
-    <main className={`mesh-surface min-h-0 flex-1 ${sheetOpen ? "overflow-hidden" : "overflow-y-auto"}`}>
+    <main
+      className={`mesh-surface min-h-0 flex-1 ${sheetOpen ? "overflow-hidden" : "overflow-y-auto"}`}
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       {children}
     </main>
   );
