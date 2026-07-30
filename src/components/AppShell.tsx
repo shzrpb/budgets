@@ -10,7 +10,7 @@ import { useVisualViewportHeight } from "@/lib/useVisualViewport";
  * white canvas showing below our content.
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
-const height = useVisualViewportHeight();
+  const height = useVisualViewportHeight();
   
   return (
     <div
