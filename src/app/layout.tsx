@@ -44,7 +44,7 @@ export default function RootLayout({
     <html lang="en" className={`${firaMono.variable} ${inter.variable} h-full overflow-hidden antialiased`}>
       <body>
         <AppShell>
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col min-h-0">
             <ScrollContainer>{children}</ScrollContainer>
           </div>
           <TopNav />
