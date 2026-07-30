@@ -10,13 +10,10 @@ import { useVisualViewportHeight } from "@/lib/useVisualViewport";
  * white canvas showing below our content.
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const height = useVisualViewportHeight();
 
   return (
     <div
-      className="fixed inset-x-0 top-0 flex flex-col text-stone-900"
-      style={{ height: height ?? "100dvh" }}
-    >
+      className="fixed inset-x-0 top-0 flex flex-col text-stone-900">
       {children}
     </div>
   );
