@@ -43,7 +43,7 @@ export default async function Home() {
   const spent = monthTransactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="flex h-full flex-col gap-2.5 overflow-hidden px-4 pt-4 pb-24">
+    <div className="flex flex-col gap-2.5 px-4 pt-4">
       <h1 className="pl-2 text-2xl font-semibold tracking-tight text-stone-900">
         Hello, {userName}
       </h1>

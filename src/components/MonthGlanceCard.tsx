@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import CategoryPill from "@/components/CategoryPill";
 import Portal from "@/components/Portal";
 import { formatMoney } from "@/lib/format";
@@ -9,11 +9,10 @@ import type { Card, Category, Transaction } from "@/lib/types";
 
 const MONTH_LABEL = new Intl.DateTimeFormat("en", { month: "long" });
 
-/** Approximate chip row height + row gap (gap-2), used only to figure out how many rows fit. */
-const CHIP_ROW_HEIGHT = 32;
-const ROW_GAP = 8;
 /** Estimated inner width (px) of the card's chip row, used only to pack chips tightly. */
 const ROW_WIDTH = 300;
+/** The page scrolls now, so this just keeps the card from growing too tall before "See all" takes over. */
+const MAX_ROWS = 2;
 
 function fmtAbs(n: number): string {
   return formatMoney(Math.abs(n));
@@ -63,31 +62,6 @@ export default function MonthGlanceCard({
   const [showAll, setShowAll] = useState(false);
   useRegisterSheetOpen(showAll);
 
-  // The homepage is a fixed, non-scrolling page — however much room is left
-  // below the chips (down to the nav bar) is however many rows we can show.
-  // Measured from the chip area's own top position rather than its rendered
-  // height, so the card can still shrink to fit only as many rows as it
-  // actually needs instead of stretching to fill the whole remaining space.
-  const chipAreaRef = useRef<HTMLDivElement>(null);
-  const [maxRows, setMaxRows] = useState(3);
-
-  useEffect(() => {
-    const el = chipAreaRef.current;
-    if (!el) return;
-
-    function recompute() {
-      const RESERVED_BOTTOM = 110; // nav bar + FAB clearance + safe area, approx
-      const top = el!.getBoundingClientRect().top;
-      const available = window.innerHeight - top - RESERVED_BOTTOM;
-      const rows = Math.max(1, Math.floor((available + ROW_GAP) / (CHIP_ROW_HEIGHT + ROW_GAP)));
-      setMaxRows(rows);
-    }
-
-    recompute();
-    window.addEventListener("resize", recompute);
-    return () => window.removeEventListener("resize", recompute);
-  }, []);
-
   const spent = transactions.reduce((sum, t) => sum + t.amount, 0);
   const progress = monthlyBudget > 0 ? Math.min(spent / monthlyBudget, 1) : 0;
   const nearLimit = monthlyBudget > 0 && spent / monthlyBudget >= 0.8;
@@ -108,10 +82,10 @@ export default function MonthGlanceCard({
     .sort((a, b) => b.amount - a.amount);
 
   const allRows = packIntoRows(categoryTotals, ROW_WIDTH);
-  // If everything fits within the measured space, show it all. Otherwise
-  // reserve the last row purely for "See all" so it never gets clipped.
-  const fitsFully = allRows.length <= maxRows;
-  const visibleRows = fitsFully ? allRows : allRows.slice(0, Math.max(0, maxRows - 1));
+  // If everything fits within MAX_ROWS, show it all. Otherwise reserve the
+  // last row purely for "See all" so a chip never gets clipped.
+  const fitsFully = allRows.length <= MAX_ROWS;
+  const visibleRows = fitsFully ? allRows : allRows.slice(0, MAX_ROWS - 1);
   const visible = visibleRows.flat();
   const hiddenCount = categoryTotals.length - visible.length;
 
@@ -147,7 +121,7 @@ export default function MonthGlanceCard({
       )}
 
       {categoryTotals.length > 0 && (
-        <div ref={chipAreaRef} className="mt-4">
+        <div className="mt-4">
           <div className="flex flex-wrap gap-2">
             {visible.map(({ category, amount }) => (
               <CategoryPill key={category.id} name={category.name} amount={amount} />
