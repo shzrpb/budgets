@@ -61,10 +61,11 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
   }
 
   return (
-    <div
-      className="fixed inset-x-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
-    >
+    <div className="fixed inset-0 z-50 bg-black/40">
+      <div
+        className="fixed inset-x-0 flex items-center justify-center p-4"
+        style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
+      >
       <div className="flex max-h-full w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
         <p className="text-sm font-semibold text-stone-800">
           {isEdit ? "Edit account" : "Add account"}
@@ -127,6 +128,7 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
             {isPending ? "Saving…" : isEdit ? "Save changes" : "Save account"}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

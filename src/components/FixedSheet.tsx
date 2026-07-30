@@ -161,10 +161,11 @@ export default function FixedSheetForm({
   const accountOrCardSelectedId = paymentMethod === "credit" ? cardId : accountId;
 
   return (
-    <div
-      className="fixed inset-x-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
-    >
+    <div className="fixed inset-0 z-50 bg-black/40">
+      <div
+        className="fixed inset-x-0 flex items-center justify-center p-4"
+        style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
+      >
       <div className="flex max-h-full w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
         <p className="text-sm font-semibold text-stone-800">
           {isEdit ? "Edit fixed spend or income" : "Add fixed spend or income"}
@@ -370,6 +371,7 @@ export default function FixedSheetForm({
           onClose={() => setPickingAccount(false)}
         />
       )}
+      </div>
     </div>
   );
 }

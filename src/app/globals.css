@@ -57,6 +57,11 @@ body {
   background-attachment: local;
   background-size: 100% 100%;
   background-repeat: no-repeat;
+  /* Exclude the safe-area-inset-top padding from this element's own paint so
+     the viewport-accurate .mesh-bg-fixed layer behind it shows through there
+     instead — this box's background-size resolves against its scrollable
+     content height, not the viewport, so it can't be trusted for that strip. */
+  background-origin: content-box;
 }
 
 /*

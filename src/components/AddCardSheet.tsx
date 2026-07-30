@@ -61,10 +61,11 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
   }
 
   return (
-    <div
-      className="fixed inset-x-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
-    >
+    <div className="fixed inset-0 z-50 bg-black/40">
+      <div
+        className="fixed inset-x-0 flex items-center justify-center p-4"
+        style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
+      >
       <div className="flex max-h-full w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
         <p className="text-sm font-semibold text-stone-800">
           {isEdit ? "Edit card" : "Add card"}
@@ -81,7 +82,7 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <div>
             <p className="text-xs font-medium text-stone-400">Monthly spend limit</p>
-            <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+            <div className="mt-2 flex h-11 items-center rounded-2xl border border-stone-200 bg-stone-50 px-4">
               <span className="text-stone-400">$</span>
               <input
                 inputMode="decimal"
@@ -94,8 +95,8 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
           </div>
 
           <div>
-            <p className="text-xs font-medium text-stone-400">Bill due day</p>
-            <div className="mt-2 flex items-center rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3">
+            <p className="text-xs font-medium text-stone-400">Bill due date</p>
+            <div className="mt-2 flex h-11 items-center rounded-2xl border border-stone-200 bg-stone-50 px-4">
               <input
                 inputMode="numeric"
                 value={billDueDay}
@@ -133,6 +134,7 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
             {isPending ? "Saving…" : isEdit ? "Save changes" : "Save card"}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
