@@ -58,7 +58,11 @@ export default function TopNav() {
   const isHome = pathname === "/";
 
   return (
-    <nav className="px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[13px]">
+    // Pinned straight to the true bottom of the screen (not the last flex
+    // child of the page column) so it always sits flush against the real
+    // edge, even in a home-screen-installed webapp where iOS can report a
+    // layout height that's shorter than the actual visible screen.
+    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[13px]">
       <div className={`flex h-14 rounded-full bg-stone-100 p-1 ${isHome ? "gap-4" : "gap-1.5"}`}>
         {TABS.map(({ href, label, Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);

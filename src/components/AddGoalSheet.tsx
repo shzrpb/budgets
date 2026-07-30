@@ -52,7 +52,7 @@ export default function AddGoalSheet({
             className="fixed inset-x-0 flex items-center justify-center p-4"
             style={{ top: viewportTop, height: viewportHeight ?? "100dvh" }}
           >
-            <div className="flex max-h-full w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
+            <div className="flex max-h-full w-full max-w-md flex-col overflow-x-hidden overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
               <p className="text-sm font-semibold text-stone-800">
                 {title ?? (goal ? "Edit goal" : "Add a goal")}
               </p>
@@ -75,7 +75,7 @@ export default function AddGoalSheet({
                 type="date"
                 value={targetDate ?? ""}
                 onChange={(e) => setTargetDate(e.target.value)}
-                className="mt-2 w-full min-w-0 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
+                className="mt-2 block w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none focus:border-stone-400"
               />
 
               <div className="mt-5 grid grid-cols-5 gap-2">
