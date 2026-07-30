@@ -50,14 +50,7 @@
  *             alerts, list items, sheets, and modals. Never filtered.
  */
 
-html {
-  min-height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
 body {
-  min-height: 100dvh;
   background: var(--mesh-bg);
   background-size: 100% 100%;
   background-repeat: no-repeat;
