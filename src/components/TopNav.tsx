@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useVisualViewportBottomGap } from "@/lib/useVisualViewport";
 
 function HouseIcon() {
   return (
@@ -53,23 +52,17 @@ const TABS = [
 
 export default function TopNav() {
   const pathname = usePathname();
-  const bottomGap = useVisualViewportBottomGap();
 
   if (pathname === "/login") return null;
 
   const isHome = pathname === "/";
 
   return (
-    // Pinned to the true bottom of the screen, not just the layout
-    // viewport's bottom-0: iOS Safari and Chrome both draw their own bottom
-    // bar inside the layout viewport, so a plain `bottom: 0` sits behind
-    // that bar instead of above it. bottomGap tracks how much of the
-    // layout viewport is currently covered by browser chrome and offsets
-    // the nav to clear it.
-    <nav
-      className="fixed inset-x-0 z-40 mx-auto w-full max-w-md"
-      style={{ bottom: bottomGap }}
-    >
+    // Pinned straight to the true bottom of the screen (not the last flex
+    // child of the page column) so it always sits flush against the real
+    // edge. Relies on the app shell (see AppShell.tsx) being sized to the
+    // actual visible viewport rather than a CSS unit that can go stale.
+    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md">
       {/* Fades the scrolled content out before it reaches the pill, so list
           rows don't show through the transparent gap around the nav. */}
       <div

@@ -35,38 +35,34 @@ export function useVisualViewportInsets(): { height: number | undefined; top: nu
 }
 
 /**
- * iOS Safari and Chrome both draw their own chrome (address bar, tab bar)
- * inside the layout viewport rather than below it, and that bar can be
- * anchored to the bottom of the screen. A `position: fixed; bottom: 0`
- * element sizes itself to the layout viewport, so it ends up positioned
- * behind that browser UI instead of just above it, leaving what looks like
- * a solid block between our content and the real bottom edge. Track how
- * much of the layout viewport's bottom is currently covered so a fixed
- * element can offset itself above it instead.
+ * `100dvh`/`inset: 0` on a fixed shell should track the true visible screen,
+ * but in an installed iOS home-screen app it can under-report the real
+ * height and never get a follow-up resize to correct itself (there's no
+ * browser chrome to animate in/out and trigger one), leaving the shell
+ * short of the actual screen — the native white canvas shows through below
+ * it. Track `visualViewport.height` directly and size the shell from it, so
+ * it's driven by a live measurement instead of a CSS unit that may never
+ * update.
  */
-export function useVisualViewportBottomGap(): number {
-  const [gap, setGap] = useState(0);
+export function useVisualViewportHeight(): number | undefined {
+  const [height, setHeight] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
 
     function update() {
-      const layoutHeight = window.innerHeight;
-      const visibleBottom = vv!.height + vv!.offsetTop;
-      setGap(Math.max(0, layoutHeight - visibleBottom));
+      setHeight(vv!.height);
     }
 
     update();
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
-    window.addEventListener("resize", update);
     return () => {
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
     };
   }, []);
 
-  return gap;
+  return height;
 }

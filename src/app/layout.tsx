@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fira_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import AppShell from "@/components/AppShell";
 import ScrollContainer from "@/components/ScrollContainer";
 import TopNav from "@/components/TopNav";
 
@@ -41,16 +42,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${firaMono.variable} ${inter.variable} h-full overflow-hidden antialiased`}>
-      {/* No overflow-hidden here: TopNav below is fixed to the true bottom
-          of the screen, and an overflow-hidden ancestor would clip it
-          there if this box ever falls short of the real viewport height
-          (as can happen in a home-screen-installed webapp). html's own
-          overflow-hidden above is enough to stop any stray page scroll. */}
-      <body className="fixed inset-0 flex flex-col text-stone-900">
-        <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
-          <ScrollContainer>{children}</ScrollContainer>
-        </div>
-        <TopNav />
+      <body>
+        <AppShell>
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
+            <ScrollContainer>{children}</ScrollContainer>
+          </div>
+          <TopNav />
+        </AppShell>
       </body>
     </html>
   );
