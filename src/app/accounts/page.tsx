@@ -1,6 +1,7 @@
 import { getAccountHistories, getAccounts } from "@/lib/data";
 import { accountTrendSeries, lastNMonthBalances } from "@/lib/networth";
 import AccountsView from "@/components/AccountsView";
+import AddAccountSheet from "@/components/AddAccountSheet";
 import PageHeader from "@/components/PageHeader";
 import { formatMoney } from "@/lib/format";
 
@@ -15,10 +16,13 @@ export default async function AccountsPage() {
     <div className="flex flex-col gap-4 px-4 pt-6">
       <PageHeader title="Accounts" />
 
-      <p className="pl-2 text-sm text-[var(--text-secondary)]">
-        Total net worth:{" "}
-        <span className="font-mono font-medium text-[var(--text-primary)]">${formatMoney(netWorth)}</span>
-      </p>
+      <div className="flex items-center justify-between pl-2">
+        <p className="text-sm text-[var(--text-secondary)]">
+          Total net worth:{" "}
+          <span className="font-mono font-medium text-[var(--text-primary)]">${formatMoney(netWorth)}</span>
+        </p>
+        <AddAccountSheet />
+      </div>
 
       <AccountsView
         accounts={accounts}

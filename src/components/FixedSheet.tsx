@@ -159,10 +159,8 @@ export default function FixedSheetForm({
   const accountOrCardSelectedId = paymentMethod === "credit" ? cardId : accountId;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30">
-      <div className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl">
-        <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-stone-200" />
-
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="flex max-h-[85dvh] w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
         <p className="text-sm font-semibold text-stone-800">
           {isEdit ? "Edit fixed spend or income" : "Add fixed spend or income"}
         </p>

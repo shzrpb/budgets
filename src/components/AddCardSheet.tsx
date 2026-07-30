@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { addCard, updateCard } from "@/app/actions";
-import AddMoreButton from "@/components/AddMoreButton";
+import { PlusIcon } from "@/components/icons";
+import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Card } from "@/lib/types";
 
 /** Cards no longer expose a color picker; every card gets this neutral tint. */
@@ -13,7 +14,14 @@ export default function AddCardSheet() {
 
   return (
     <>
-      <AddMoreButton onClick={() => setOpen(true)} />
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Add card"
+        className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] transition-colors hover:bg-stone-100"
+      >
+        <PlusIcon />
+      </button>
       {open && <CardSheetForm onClose={() => setOpen(false)} />}
     </>
   );
@@ -24,6 +32,7 @@ export function EditCardSheet({ card, onClose }: { card: Card; onClose: () => vo
 }
 
 function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) {
+  useRegisterSheetOpen(true);
   const isEdit = !!card;
   const [name, setName] = useState(card?.name ?? "");
   const [maxSpend, setMaxSpend] = useState(card?.max_spend?.toString() ?? "");
@@ -50,9 +59,8 @@ function CardSheetForm({ card, onClose }: { card?: Card; onClose: () => void }) 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30">
-      <div className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl">
-        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="flex max-h-[85dvh] w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-stone-800">
             {isEdit ? "Edit card" : "Add card"}

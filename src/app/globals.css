@@ -59,6 +59,18 @@ body {
   background-repeat: no-repeat;
 }
 
+/*
+ * Same mesh, viewport-sized rather than scroll-content-sized. Sits behind
+ * the whole app column (including the chrome above/below the scrollable
+ * .mesh-surface, like the bottom nav) so nothing outside the scroll area
+ * reads as a flat, unrelated header/footer bar.
+ */
+.mesh-bg-fixed {
+  background: var(--mesh-bg);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
 /* Grain to break up 8-bit banding across the mesh's very narrow colour range.
    Viewport-fixed since noise carries no positional meaning. */
 .mesh-surface::before {

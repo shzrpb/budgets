@@ -2,18 +2,27 @@
 
 import { useState, useTransition } from "react";
 import { addAccount, updateAccount } from "@/app/actions";
-import AddMoreButton from "@/components/AddMoreButton";
+import { PlusIcon } from "@/components/icons";
+import { useRegisterSheetOpen } from "@/lib/sheetVisibility";
 import type { Account, AccountType } from "@/lib/types";
 
 const TYPES: AccountType[] = ["checking", "savings", "investment", "cash", "credit", "other"];
-const COLORS = ["#57534e", "#0ea5e9", "#22c55e", "#a855f7", "#f97316", "#ec4899"];
+/** Accounts no longer expose a color picker; every new account gets this neutral tint. */
+const DEFAULT_COLOR = "#57534e";
 
 export default function AddAccountSheet() {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <AddMoreButton onClick={() => setOpen(true)} />
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Add account"
+        className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--text-secondary)] transition-colors hover:bg-stone-100"
+      >
+        <PlusIcon />
+      </button>
       {open && <AccountSheetForm onClose={() => setOpen(false)} />}
     </>
   );
@@ -30,11 +39,11 @@ export function EditAccountSheet({
 }
 
 function AccountSheetForm({ account, onClose }: { account?: Account; onClose: () => void }) {
+  useRegisterSheetOpen(true);
   const isEdit = !!account;
   const [name, setName] = useState(account?.name ?? "");
   const [type, setType] = useState<AccountType>(account?.type ?? "checking");
   const [balance, setBalance] = useState(account?.balance.toString() ?? "");
-  const [color, setColor] = useState(account?.color ?? COLORS[0]);
   const [isPending, startTransition] = useTransition();
 
   const canSave = name.trim().length > 0 && balance !== "";
@@ -42,7 +51,7 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
   function handleSave() {
     if (!canSave) return;
     startTransition(async () => {
-      const input = { name: name.trim(), type, balance: Number(balance), color };
+      const input = { name: name.trim(), type, balance: Number(balance), color: account?.color ?? DEFAULT_COLOR };
       if (isEdit) await updateAccount(account!.id, input);
       else await addAccount(input);
       onClose();
@@ -50,9 +59,8 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30">
-      <div className="w-full max-w-md rounded-t-3xl bg-white p-5 pb-8 shadow-xl">
-        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-200" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="flex max-h-[85dvh] w-full max-w-md flex-col overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 shadow-xl">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-stone-800">
             {isEdit ? "Edit account" : "Add account"}
@@ -85,23 +93,6 @@ function AccountSheetForm({ account, onClose }: { account?: Account; onClose: ()
             >
               {t}
             </button>
-          ))}
-        </div>
-
-        <p className="mt-4 text-xs font-medium text-stone-400">Color</p>
-        <div className="mt-2 flex gap-2">
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setColor(c)}
-              className="h-7 w-7 rounded-full ring-2 ring-offset-2 transition-all"
-              style={{
-                backgroundColor: c,
-                outlineColor: c,
-                ["--tw-ring-color" as string]: color === c ? c : "transparent",
-              }}
-            />
           ))}
         </div>
 

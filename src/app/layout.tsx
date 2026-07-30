@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fira_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import ScrollContainer from "@/components/ScrollContainer";
 import TopNav from "@/components/TopNav";
 
 const firaMono = Fira_Mono({
@@ -34,8 +35,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${firaMono.variable} ${inter.variable} h-full antialiased`}>
       <body className="flex h-dvh flex-col overflow-hidden bg-stone-50 text-stone-900">
-        <div className="mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
-          <main className="mesh-surface min-h-0 flex-1 overflow-y-auto">{children}</main>
+        <div className="mesh-bg-fixed mx-auto flex w-full max-w-md flex-1 flex-col overflow-hidden">
+          <ScrollContainer>{children}</ScrollContainer>
           <TopNav />
         </div>
       </body>
