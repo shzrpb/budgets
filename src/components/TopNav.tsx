@@ -72,7 +72,7 @@ export default function TopNav() {
           WebkitMaskImage: "linear-gradient(to bottom, transparent, black 40%)",
         }}
       />
-      <div className="relative px-4 pt-2px">
+      <div className="relative px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2px">
         <div className={`flex h-14 rounded-full bg-stone-100 p-1 ${isHome ? "gap-4" : "gap-1.5"}`}>
         {TABS.map(({ href, label, Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
